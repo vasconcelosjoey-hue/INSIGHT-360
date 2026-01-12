@@ -1,3 +1,4 @@
+
 import { initializeApp } from 'firebase/app';
 import { getFirestore, collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { UserInfo, ProcessedResult } from '../types';
@@ -18,20 +19,17 @@ let db: any = null;
 try {
     const app = initializeApp(firebaseConfig);
     db = getFirestore(app);
-    console.log("Firebase conectado com sucesso!");
 } catch (error) {
     console.error("Erro ao inicializar Firebase:", error);
 }
 
-export const saveTestResult = async (userInfo: UserInfo, results: ProcessedResult[]) => {
+export const saveTestResult = async (userInfo: UserInfo, results: ProcessedResult[], testId: string) => {
   if (!db) {
     console.warn("Banco de dados não inicializado corretamente.");
     return false;
   }
 
   try {
-    // Prepara o objeto para salvar
-    // Filtra apenas os dados essenciais dos resultados para economizar espaço
     const simpleResults = results.map(r => ({
         id: r.dimensionId,
         name: r.dimensionName,
@@ -39,14 +37,14 @@ export const saveTestResult = async (userInfo: UserInfo, results: ProcessedResul
     }));
 
     await addDoc(collection(db, "leads"), {
+      testId: testId,
       ...userInfo,
       results: simpleResults,
       createdAt: serverTimestamp(),
-      platform: navigator.userAgent, // Útil para saber se foi mobile/desktop
+      platform: navigator.userAgent,
       completedAt: new Date().toISOString()
     });
 
-    console.log("Lead salvo com sucesso!");
     return true;
 
   } catch (e) {

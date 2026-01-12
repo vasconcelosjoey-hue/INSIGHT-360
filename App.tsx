@@ -17,12 +17,21 @@ const App: React.FC = () => {
   const [answers, setAnswers] = useState<Record<number, number>>({});
   const [results, setResults] = useState<ProcessedResult[]>([]);
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
+  const [testId, setTestId] = useState<string>('');
   const [shakeQuestion, setShakeQuestion] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isValidatingCompleteness, setIsValidatingCompleteness] = useState(false);
   
-  // State for Manual Input Mode
   const [manualScores, setManualScores] = useState<Record<string, number>>({});
+
+  const generateTestId = () => {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let result = 'IS360-';
+    for (let i = 0; i < 8; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
+  };
 
   const handleLeadSubmit = (info: UserInfo) => {
     setUserInfo(info);
@@ -44,23 +53,21 @@ const App: React.FC = () => {
     setIsValidatingCompleteness(false);
   };
 
-  const initializeManualScores = () => {
-    const initial: Record<string, number> = {};
-    DIMENSIONS.forEach(d => initial[d.id] = 50);
-    setManualScores(initial);
-  };
-
   const handleDirectManualEntry = () => {
     setUserInfo({
       name: 'Visitante (Manual)',
       email: '',
       whatsapp: ''
     });
-    initializeManualScores();
+    const initial: Record<string, number> = {};
+    DIMENSIONS.forEach(d => initial[d.id] = 50);
+    setManualScores(initial);
     setQuizState('manual_input');
   };
 
   const handleManualSubmit = () => {
+    const newId = generateTestId();
+    setTestId(newId);
     const processed: ProcessedResult[] = DIMENSIONS.map(dim => ({
       dimensionId: dim.id,
       dimensionName: dim.name,
@@ -77,7 +84,6 @@ const App: React.FC = () => {
     const newAnswers = { ...answers, [currentQId]: value };
     setAnswers(newAnswers);
 
-    // Se estivermos em modo de validação (corrigindo algo que faltou)
     if (isValidatingCompleteness) {
       setTimeout(() => {
         validateAndFinish(newAnswers);
@@ -112,7 +118,6 @@ const App: React.FC = () => {
 
   const validateAndFinish = (currentAnswers: Record<number, number>) => {
     let firstUnansweredIndex = -1;
-
     for (let i = 0; i < TOTAL_QUESTIONS; i++) {
       const qId = QUESTIONS[i].id;
       if (currentAnswers[qId] === undefined) {
@@ -122,13 +127,11 @@ const App: React.FC = () => {
     }
 
     if (firstUnansweredIndex !== -1) {
-      // Ativa o modo de validação e pula para a pergunta que falta
       setIsValidatingCompleteness(true);
       setCurrentQuestionIndex(firstUnansweredIndex);
       setShakeQuestion(true);
       setTimeout(() => setShakeQuestion(false), 800);
     } else {
-      // Tudo respondido, pode calcular
       calculateResults(currentAnswers);
     }
   };
@@ -136,6 +139,9 @@ const App: React.FC = () => {
   const calculateResults = async (finalAnswers: Record<number, number>) => {
     setQuizState('calculating');
     setIsSaving(true);
+    
+    const newId = generateTestId();
+    setTestId(newId);
     
     const rawScores: Record<string, number[]> = {};
     DIMENSIONS.forEach(d => rawScores[d.id] = []);
@@ -151,13 +157,10 @@ const App: React.FC = () => {
       const values = rawScores[dim.id];
       const count = values.length;
       if (count === 0) return { dimensionId: dim.id, dimensionName: dim.name, score: 0, description: dim.description };
-
       const sum = values.reduce((a, b) => a + b, 0);
       const minPossible = count * 1;
       const maxPossible = count * 5;
-      
       const normalized = ((sum - minPossible) / (maxPossible - minPossible)) * 100;
-      
       return {
         dimensionId: dim.id,
         dimensionName: dim.name,
@@ -167,7 +170,7 @@ const App: React.FC = () => {
     });
 
     if (userInfo && userInfo.email !== '') {
-      saveTestResult(userInfo, processed).catch(err => console.warn("Background save failed:", err));
+      saveTestResult(userInfo, processed, newId).catch(err => console.warn("Background save failed:", err));
     }
 
     setTimeout(() => {
@@ -184,7 +187,6 @@ const App: React.FC = () => {
   return (
     <div className="min-h-screen bg-slate-50 font-sans text-slate-900 selection:bg-indigo-100 selection:text-indigo-900">
       
-      {/* Premium Header */}
       {quizState !== 'intro' && quizState !== 'welcome' && quizState !== 'disclaimer' && (
         <header className="bg-white/80 backdrop-blur-md border-b border-slate-200/60 sticky top-0 z-50">
           <div className="max-w-6xl mx-auto px-6 h-20 flex items-center justify-between">
@@ -206,50 +208,34 @@ const App: React.FC = () => {
         </header>
       )}
 
-      {/* Main Content */}
       <main className="flex flex-col items-center justify-start min-h-[calc(100vh-80px)] w-full relative">
-        
-        {quizState === 'disclaimer' && (
-          <Disclaimer onAccept={handleDisclaimerAccept} />
-        )}
-
-        {quizState === 'welcome' && (
-          <WelcomeWizard onComplete={handleWelcomeComplete} />
-        )}
-        
+        {quizState === 'disclaimer' && <Disclaimer onAccept={handleDisclaimerAccept} />}
+        {quizState === 'welcome' && <WelcomeWizard onComplete={handleWelcomeComplete} />}
         {quizState === 'intro' && (
           <div className="min-h-screen w-full flex items-center justify-center bg-[#0f172a] p-4 relative overflow-hidden">
-             {/* Background Ambience */}
              <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-600/10 rounded-full blur-[100px] pointer-events-none" />
              <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-violet-600/10 rounded-full blur-[100px] pointer-events-none" />
-
             <div className="max-w-3xl w-full px-8 py-16 text-center animate-fade-in-up bg-white/5 backdrop-blur-xl border border-white/10 rounded-[2.5rem] shadow-2xl relative z-10">
               <div className="inline-flex items-center justify-center p-4 bg-gradient-to-br from-indigo-500/20 to-violet-500/20 rounded-2xl mb-8 border border-white/5 shadow-inner">
                 <Layers className="w-12 h-12 text-indigo-300 drop-shadow-lg" />
               </div>
-              
               <h1 className="text-4xl md:text-6xl font-extrabold text-white mb-6 tracking-tight">
                 Mapeie seu <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-violet-400">Perfil Insight360</span>
               </h1>
-              
               <p className="text-lg md:text-xl text-slate-300 mb-12 leading-relaxed max-w-2xl mx-auto font-light">
                 Olá, <span className="text-indigo-300 font-medium">{userInfo?.name.split(' ')[0]}</span>. 
-                Prepare-se para analisar suas 21 dimensões psicológicas (42 perguntas rápidas) e descobrir onde seus traços convergem.
+                Prepare-se para analisar suas 21 dimensões psicológicas e descobrir onde seus traços convergem.
               </p>
-              
               <div className="flex flex-col items-center gap-4">
                 <button 
                   onClick={handleStart}
                   className="group relative inline-flex items-center justify-center px-12 py-5 text-lg font-semibold text-white transition-all duration-300 bg-gradient-to-r from-indigo-600 to-violet-600 rounded-2xl shadow-xl shadow-indigo-500/40 hover:shadow-indigo-500/60 hover:-translate-y-1 hover:scale-105 w-full md:w-auto"
                 >
-                  Iniciar Análise (Compacta)
+                  Iniciar Análise (42 Questões)
                   <ArrowRight className="ml-3 w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </button>
               </div>
-              
-              <p className="mt-8 text-xs text-slate-500 uppercase tracking-widest font-medium">
-                TEMPO ESTIMADO: 3-5 MINUTOS
-              </p>
+              <p className="mt-8 text-xs text-slate-500 uppercase tracking-widest font-medium">TEMPO ESTIMADO: 3-5 MINUTOS</p>
             </div>
           </div>
         )}
@@ -262,23 +248,15 @@ const App: React.FC = () => {
                   <h2 className="text-2xl font-bold text-slate-900">Entrada Manual de Dados</h2>
                   <p className="text-slate-500">Transcreva os resultados (%) do seu documento.</p>
                 </div>
-                <button 
-                  onClick={() => setQuizState('lead-capture')}
-                  className="text-sm text-slate-400 hover:text-rose-500 transition-colors"
-                >
-                  Cancelar
-                </button>
+                <button onClick={() => setQuizState('lead-capture')} className="text-sm text-slate-400 hover:text-rose-500 transition-colors">Cancelar</button>
               </div>
-
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-6">
                 {DIMENSIONS.map((dim) => (
                   <div key={dim.id} className="bg-slate-50 p-4 rounded-xl border border-slate-100">
                     <div className="flex justify-between mb-2 items-center">
                       <label className="text-sm font-semibold text-slate-700 block truncate flex-1" title={dim.name}>{dim.name}</label>
                       <input 
-                        type="number" 
-                        min="0" 
-                        max="100"
+                        type="number" min="0" max="100"
                         value={manualScores[dim.id] || 0}
                         onChange={(e) => {
                           const val = Math.min(100, Math.max(0, parseInt(e.target.value) || 0));
@@ -289,9 +267,7 @@ const App: React.FC = () => {
                       <span className="text-xs text-slate-400 ml-1">%</span>
                     </div>
                     <input 
-                      type="range" 
-                      min="0" 
-                      max="100" 
+                      type="range" min="0" max="100" 
                       value={manualScores[dim.id] || 0}
                       onChange={(e) => setManualScores({...manualScores, [dim.id]: parseInt(e.target.value)})}
                       className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600 hover:bg-slate-300 transition-colors"
@@ -299,14 +275,9 @@ const App: React.FC = () => {
                   </div>
                 ))}
               </div>
-
               <div className="mt-8 pt-6 border-t border-slate-100 flex justify-end">
-                 <button 
-                  onClick={handleManualSubmit}
-                  className="flex items-center gap-2 px-8 py-4 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-500/20 hover:-translate-y-1 font-bold"
-                 >
-                   <Save className="w-5 h-5" />
-                   Gerar Relatório & Gráfico
+                 <button onClick={handleManualSubmit} className="flex items-center gap-2 px-8 py-4 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-500/20 hover:-translate-y-1 font-bold">
+                   <Save className="w-5 h-5" /> Gerar Relatório & Gráfico
                  </button>
               </div>
             </div>
@@ -353,10 +324,10 @@ const App: React.FC = () => {
           <ResultsDashboard 
             results={results}
             userInfo={userInfo}
+            testId={testId}
             onRestart={() => setQuizState('lead-capture')}
           />
         )}
-
       </main>
       <style>{`
         @keyframes shake {

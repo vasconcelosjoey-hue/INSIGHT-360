@@ -9,7 +9,7 @@ import { Disclaimer } from './components/Disclaimer';
 import { WelcomeWizard } from './components/WelcomeWizard';
 import { LeadCapture } from './components/LeadCapture';
 import { saveTestResult } from './services/firebase';
-import { Brain, ArrowRight, Layers, Beaker, Settings, Save } from 'lucide-react';
+import { Brain, ArrowRight, Layers, Save } from 'lucide-react';
 
 const App: React.FC = () => {
   const [quizState, setQuizState] = useState<QuizState>('lead-capture');
@@ -177,7 +177,7 @@ const App: React.FC = () => {
       setIsSaving(false);
       setResults(processed);
       setQuizState('results');
-    }, 2000);
+    }, 2500);
   };
 
   if (quizState === 'lead-capture') {
@@ -235,7 +235,7 @@ const App: React.FC = () => {
                   <ArrowRight className="ml-3 w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </button>
               </div>
-              <p className="mt-8 text-xs text-slate-500 uppercase tracking-widest font-medium">TEMPO ESTIMADO: 3-5 MINUTOS</p>
+              <p className="mt-8 text-xs text-slate-500 uppercase tracking-widest font-medium italic">ANÁLISE PREMIUM ATIVADA</p>
             </div>
           </div>
         )}
@@ -277,7 +277,7 @@ const App: React.FC = () => {
               </div>
               <div className="mt-8 pt-6 border-t border-slate-100 flex justify-end">
                  <button onClick={handleManualSubmit} className="flex items-center gap-2 px-8 py-4 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-500/20 hover:-translate-y-1 font-bold">
-                   <Save className="w-5 h-5" /> Gerar Relatório & Gráfico
+                   <Save className="w-5 h-5" /> Gerar Relatório Premium
                  </button>
               </div>
             </div>
@@ -307,15 +307,15 @@ const App: React.FC = () => {
         )}
 
         {quizState === 'calculating' && (
-          <div className="min-h-[80vh] flex flex-col items-center justify-center text-center animate-pulse p-4">
-             <div className="relative w-24 h-24 mb-8">
+          <div className="min-h-[80vh] flex flex-col items-center justify-center text-center p-4">
+             <div className="relative w-32 h-32 mb-8">
                <div className="absolute inset-0 border-4 border-indigo-100 rounded-full"></div>
                <div className="absolute inset-0 border-4 border-indigo-600 rounded-full border-t-transparent animate-spin"></div>
-               <Brain className="absolute inset-0 m-auto w-8 h-8 text-indigo-600 animate-pulse" />
+               <Brain className="absolute inset-0 m-auto w-12 h-12 text-indigo-600 animate-pulse" />
              </div>
-            <h2 className="text-3xl font-bold text-slate-900 mb-2">Processando Perfil</h2>
-            <p className="text-slate-500 text-lg">
-              {isSaving ? "Salvando seus resultados na nuvem..." : "Nossos algoritmos estão calculando suas 21 dimensões..."}
+            <h2 className="text-3xl font-bold text-slate-900 mb-2">Gerando Relatório Premium</h2>
+            <p className="text-slate-500 text-lg max-w-md mx-auto">
+              Nossa IA está cruzando suas 42 respostas para mapear suas 21 dimensões psicológicas...
             </p>
           </div>
         )}

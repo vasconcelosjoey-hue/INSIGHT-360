@@ -25,91 +25,70 @@ export const DIMENSIONS: Dimension[] = [
   { id: 'espiritualidade', name: 'Espiritualidade', description: 'Crença no transcendente e papel espiritual.' },
 ];
 
-// Seleção de 42 perguntas (2 por dimensão) para manter a precisão com metade do tempo
 const COMPACT_QUESTIONS_LIST = [
   // Autodirecionamento
-  "Está apenas nas minhas mãos o meu destino e as escolhas que faço.",
-  "Os problemas que enfrento são, em sua maioria, resultado das minhas próprias ações e não da sorte.",
-  
+  "Eu sinto que sou o único responsável pelas direções que minha vida toma.",
+  "As escolhas que faço hoje determinam meu sucesso futuro, independente de sorte.",
   // Empatia
-  "Ao ver alguém em dificuldade, consigo sentir e imaginar exatamente o que a pessoa está passando.",
-  "Tenho facilidade em perceber os sentimentos alheios e ajustar meu comportamento para ser acolhedor.",
-  
+  "Consigo perceber e sentir o desconforto de alguém antes mesmo da pessoa falar.",
+  "Tenho facilidade em me colocar no lugar do outro para entender suas motivações.",
   // Autoconfiança
-  "Sinto-me totalmente capaz de identificar oportunidades e resolver qualquer problema que surja.",
-  "Não tenho medo do futuro, pois confio na minha habilidade de lidar com qualquer imprevisto.",
-  
+  "Acredito firmemente que tenho as habilidades necessárias para superar qualquer desafio.",
+  "Diante de uma situação nova e complexa, confio plenamente na minha capacidade de resolvê-la.",
   // Independência
-  "Sinto-me muito bem e produtivo mesmo quando estou sozinho por longos períodos.",
-  "Consigo agir conforme minhas convicções sem depender da aprovação ou opinião alheia.",
-  
+  "Tomo decisões importantes baseadas nas minhas convicções, mesmo que outros discordem.",
+  "Não sinto necessidade de buscar aprovação constante das pessoas para me sentir validado.",
   // Flexibilidade
-  "Acredito que, para alcançar um objetivo importante, os fins podem justificar os meios.",
-  "Sinto-me confortável em passar por cima de certas regras se isso me ajudar a vencer.",
-  
+  "Acredito que as regras podem ser flexibilizadas se o resultado final for mais importante.",
+  "Em certas situações, é necessário ser pragmático e ignorar convenções para atingir o objetivo.",
   // Procrastinação
-  "Frequentemente deixo tarefas importantes para a última hora e acabo trabalhando sob pressão.",
-  "Tenho o hábito de priorizar atividades prazerosas e adiar as obrigações mais difíceis.",
-  
+  "Tenho o hábito de adiar tarefas que considero chatas ou difíceis até o último momento.",
+  "Muitas vezes perco o foco em obrigações importantes por causa de distrações momentâneas.",
   // Inibição Social
-  "Costumo me sentir inseguro ou tímido ao interagir com pessoas desconhecidas.",
-  "Tenho grande dificuldade em dizer 'não' às solicitações das pessoas ou em reclamar meus direitos.",
-  
+  "Em reuniões com pessoas desconhecidas, costumo ficar em silêncio e evitar chamar atenção.",
+  "Sinto uma certa ansiedade ou timidez quando preciso expressar minha opinião em público.",
   // Persistência
-  "Mesmo diante de obstáculos extremos, persisto até o fim em meus objetivos.",
-  "Sou conhecido por ser teimoso em continuar uma tarefa, mesmo quando parece impossível.",
-  
+  "Sou capaz de manter o esforço em um projeto por meses, mesmo sem ver resultados imediatos.",
+  "Desistir não é uma opção para mim, mesmo quando todos dizem que é impossível.",
   // Auto-aceitação
-  "Reconheço com clareza minhas limitações e aceito que não sou capaz de fazer tudo bem.",
-  "Sou honesto comigo mesmo sobre meus defeitos e como eles impactam minha vida.",
-  
+  "Lido bem com meus erros e não me martirizo por não ser perfeito em tudo.",
+  "Aceito minhas vulnerabilidades como parte natural do meu crescimento como ser humano.",
   // Reflexão
-  "Prefiro refletir profundamente sobre todos os fatos antes de tomar qualquer decisão importante.",
-  "Demoro a decidir porque analiso racionalmente todas as variáveis, ignorando a intuição.",
-  
+  "Sempre analiso todos os prós e contras exaustivamente antes de tomar uma decisão.",
+  "Prefiro a lógica e os dados concretos à intuição na hora de planejar meus passos.",
   // Otimismo
-  "Tenho a convicção profunda de que, no final, tudo sempre vai dar certo.",
-  "Acredito que sou uma pessoa de sorte e que o futuro reserva coisas melhores.",
-  
+  "Acredito que, não importa quão difícil seja a situação, algo bom sairá dela.",
+  "Vejo o futuro com entusiasmo e espero que grandes coisas aconteçam na minha vida.",
   // Medo da Incerteza
-  "Prefiro o caminho seguro e conhecido, mesmo que o duvidoso prometa maiores recompensas.",
-  "Sinto-me desconfortável em situações novas e prefiro manter minhas rotinas habituais.",
-  
+  "Sinto um grande desconforto quando não sei exatamente o que vai acontecer a seguir.",
+  "Prefiro manter rotinas previsíveis a me arriscar em situações totalmente novas.",
   // Extravagância
-  "Gosto de expressar minhas emoções abertamente e de causar uma boa impressão nas pessoas.",
-  "Sinto que só serei plenamente realizado se alcançar uma conquista grandiosa e marcante.",
-  
-  // Conquista / Ambição
-  "Considero-me uma pessoa muito ambiciosa, focada no sucesso e no crescimento profissional.",
-  "Minha felicidade pessoal está diretamente ligada às minhas grandes conquistas profissionais.",
-  
+  "Gosto de me expressar de forma marcante e de ser reconhecido pelo meu estilo ou ideias.",
+  "Sinto-me energizado quando sou o centro das atenções em um ambiente social ou profissional.",
+  // Conquista
+  "O sucesso profissional e o reconhecimento financeiro são meus principais motores de vida.",
+  "Sou altamente competitivo e busco sempre estar entre os melhores naquilo que faço.",
   // Ordem
-  "Acredito rigorosamente que toda e qualquer regra ou lei existe para ser cumprida sem questionamento.",
-  "Mantenho minha vida e minhas atividades sempre muito bem organizadas e estruturadas.",
-  
+  "Para mim, a disciplina e o respeito à hierarquia são fundamentais para qualquer sociedade.",
+  "Mantenho meus pertences e minha agenda rigorosamente organizados e planejados.",
   // Ideais
-  "Muitas vezes mudo minha rotina ou faço sacrifícios pessoais em função das minhas crenças e valores.",
-  "Eu brigo e defendo com firmeza as ideias e verdades que considero corretas.",
-  
+  "Estou disposto a fazer grandes sacrifícios pessoais por uma causa em que acredito.",
+  "Meus valores éticos são inegociáveis, mesmo que isso me traga prejuízos imediatos.",
   // Altruísmo
-  "Sinto grande satisfação em ajudar as pessoas e cooperar, mesmo sem receber reconhecimento.",
-  "Ofereço ajuda com frequência para quem precisa, inclusive para quem não tenho afinidade.",
-  
+  "Frequentemente ajudo pessoas sem esperar absolutamente nada em troca, nem mesmo um obrigado.",
+  "Priorizo o bem-estar coletivo sobre meus interesses individuais em projetos de equipe.",
   // Sentimentalismo
-  "Na hora de tomar decisões difíceis, prefiro ouvir o que o meu coração diz em vez da razão.",
-  "Considero-me uma pessoa altamente sentimental e me comovo facilmente com histórias tristes.",
-  
+  "Sou facilmente tocado por demonstrações de afeto e me emociono com frequência.",
+  "Minhas emoções costumam ter um peso maior do que a lógica pura nas minhas relações.",
   // Frater
-  "Acredito sinceramente que a maioria das pessoas é boa e digna de confiança.",
-  "Tenho grande facilidade em fazer novos amigos e compartilhar meus sentimentos com eles.",
-  
+  "Confio na bondade inerente das pessoas até que me provem o contrário.",
+  "Tenho facilidade em estabelecer vínculos profundos de amizade em pouco tempo.",
   // Identificação
-  "Sinto-me parte de algo maior e costumo ter um forte senso de conexão com o universo ou o todo.",
-  "Gosto de pertencer a grupos específicos e sinto que minha identidade está ligada a eles.",
-  
+  "Sinto que minhas ações individuais impactam o mundo como um todo de forma conectada.",
+  "Tenho um forte senso de pertencimento a comunidades que compartilham meus propósitos.",
   // Espiritualidade
-  "Acredito firmemente que tenho um propósito ou papel espiritual a cumprir neste mundo.",
-  "Tenho convicção na existência de uma força divina superior ou de vida após a morte."
+  "Acredito que existe uma dimensão espiritual ou transcendente que guia nossa existência.",
+  "Sinto que minha vida tem um propósito sagrado ou uma missão que vai além do material."
 ];
 
 const generateQuestions = (): Question[] => {

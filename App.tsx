@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { QUESTIONS, DIMENSIONS, TOTAL_QUESTIONS } from './constants';
@@ -173,7 +174,6 @@ const App: React.FC = () => {
     });
 
     // Save to Firebase (Non-blocking / Fire and Forget)
-    // Isso garante que se o firebase falhar (erro de faturamento), o usuário ainda vê os resultados
     if (userInfo && userInfo.email !== '') {
       saveTestResult(userInfo, processed).catch(err => console.warn("Background save failed:", err));
     }
@@ -254,24 +254,6 @@ const App: React.FC = () => {
                   Iniciar Análise (Questionário)
                   <ArrowRight className="ml-3 w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </button>
-
-                <div className="flex flex-col md:flex-row gap-3 mt-2">
-                  <button 
-                    onClick={handleManualMode}
-                    className="flex items-center justify-center gap-2 text-sm text-indigo-200 border border-indigo-500/30 bg-indigo-900/20 hover:bg-indigo-900/40 transition-all py-2.5 px-6 rounded-xl"
-                  >
-                    <Settings className="w-4 h-4" />
-                    Inserir Dados Manualmente
-                  </button>
-
-                  <button 
-                    onClick={handleSimulate}
-                    className="flex items-center justify-center gap-2 text-sm text-slate-400 hover:text-white transition-colors py-2.5 px-6 rounded-xl hover:bg-white/5"
-                  >
-                    <Beaker className="w-4 h-4" />
-                    Simular (Demo)
-                  </button>
-                </div>
               </div>
               
               <p className="mt-8 text-xs text-slate-500 uppercase tracking-widest font-medium">

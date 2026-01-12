@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { ShieldCheck, ArrowRight, FileText, Lock } from 'lucide-react';
 
@@ -22,44 +23,44 @@ export const Disclaimer: React.FC<DisclaimerProps> = ({ onAccept }) => {
            </div>
            <div>
              <h1 className="text-xl md:text-2xl font-bold text-white tracking-tight">Privacidade & Dados</h1>
-             <p className="text-sm text-slate-400">Transparência total sobre como usamos suas informações.</p>
+             <p className="text-sm text-slate-300">Transparência total sobre como usamos suas informações.</p>
            </div>
         </div>
         
         {/* Scrollable Content */}
         <div className="p-6 md:p-8 overflow-y-auto custom-scrollbar flex-grow">
-           <div className="prose prose-invert prose-p:text-slate-300 prose-headings:text-white max-w-none">
+           <div className="prose prose-invert max-w-none text-white">
              
-             <div className="bg-indigo-500/10 border border-indigo-500/20 p-5 rounded-xl mb-8">
-               <p className="m-0 text-indigo-200 font-medium">
+             <div className="bg-indigo-500/20 border border-indigo-500/30 p-5 rounded-xl mb-8">
+               <p className="m-0 text-white font-bold text-lg">
                  No Insight360, seus dados são tratados com o mais alto nível de criptografia e confidencialidade.
                </p>
              </div>
 
-             <h3 className="flex items-center gap-2 text-lg">
-                <ShieldCheck className="w-5 h-5 text-indigo-400" /> Finalidade da Coleta
+             <h3 className="flex items-center gap-2 text-xl font-bold text-white mb-4">
+                <ShieldCheck className="w-6 h-6 text-indigo-400" /> Finalidade da Coleta
              </h3>
-             <p>
+             <p className="text-slate-100 text-lg leading-relaxed mb-6">
                Os dados fornecidos (Nome, WhatsApp, E-mail) são utilizados <strong>exclusivamente</strong> para personalizar seu relatório final e permitir o envio dos resultados. Não vendemos suas informações para terceiros.
              </p>
 
-             <h3 className="flex items-center gap-2 text-lg mt-8">
-                <FileText className="w-5 h-5 text-indigo-400" /> Metodologia
+             <h3 className="flex items-center gap-2 text-xl font-bold text-white mt-8 mb-4">
+                <FileText className="w-6 h-6 text-indigo-400" /> Metodologia
              </h3>
-             <p>
+             <p className="text-slate-100 text-lg leading-relaxed mb-6">
                Este teste utiliza algoritmos de processamento comportamental local. Em alguns casos, inteligência artificial segura é acionada para gerar insights textuais no seu relatório, sem armazenar seu perfil permanentemente em bases de treinamento públicas.
              </p>
 
-             <h3 className="flex items-center gap-2 text-lg mt-8">
-                <Lock className="w-5 h-5 text-indigo-400" /> Seus Direitos
+             <h3 className="flex items-center gap-2 text-xl font-bold text-white mt-8 mb-4">
+                <Lock className="w-6 h-6 text-indigo-400" /> Seus Direitos
              </h3>
-             <p>
+             <p className="text-slate-100 text-lg leading-relaxed mb-6">
                Você tem total controle. O teste é projetado para feedback imediato. Ao fechar a aplicação, os dados temporários da sessão são descartados, mantendo apenas o registro de lead seguro em nossa base administrativa para suporte.
              </p>
 
              <hr className="border-white/10 my-8" />
              
-             <p className="text-sm text-slate-500">
+             <p className="text-sm text-slate-400 italic">
                Ao continuar, você concorda com os termos acima e autoriza o processamento das suas respostas para geração do perfil Insight360.
              </p>
            </div>

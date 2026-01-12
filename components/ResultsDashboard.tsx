@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Radar, 
   RadarChart, 
@@ -37,7 +37,23 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ results, use
   };
 
   const handlePrint = () => {
+    // Salva o título original
+    const originalTitle = document.title;
+    
+    // Formata o nome do arquivo para o PDF (remove espaços e caracteres especiais)
+    const safeName = userInfo?.name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '_') || 'Candidato';
+    const fileName = `Relatorio_Insight360_${safeName}_${testId}`;
+    
+    // Altera o título para que o navegador sugira este nome ao salvar
+    document.title = fileName;
+    
+    // Dispara a impressão
     window.print();
+    
+    // Restaura o título após a impressão (timeout para garantir que o diálogo de impressão capturou o título)
+    setTimeout(() => {
+      document.title = originalTitle;
+    }, 1000);
   };
 
   return (
@@ -253,15 +269,14 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ results, use
         {/* Print Content Grid */}
         <div className="grid grid-cols-2 gap-10 mb-8">
            <div className="bg-white rounded-xl p-4 border border-slate-200 flex items-center justify-center">
-             <div className="w-full h-[400px]">
-                <ResponsiveContainer width="100%" height="100%">
-                    <RadarChart cx="50%" cy="50%" outerRadius="80%" data={results}>
-                      <PolarGrid gridType="polygon" stroke="#64748b" strokeWidth={1} />
-                      <PolarAngleAxis dataKey="dimensionName" tick={{ fill: '#0f172a', fontSize: 9, fontWeight: 'bold' }} />
-                      <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
-                      <Radar name="Perfil" dataKey="score" stroke="#1e1b4b" strokeWidth={3} fill="#4f46e5" fillOpacity={0.45} />
-                    </RadarChart>
-                  </ResponsiveContainer>
+             {/* Dimensões fixas para garantir renderização correta no PDF */}
+             <div className="w-[350px] h-[350px]">
+                <RadarChart cx={175} cy={175} outerRadius={120} width={350} height={350} data={results}>
+                  <PolarGrid gridType="polygon" stroke="#64748b" strokeWidth={1} />
+                  <PolarAngleAxis dataKey="dimensionName" tick={{ fill: '#0f172a', fontSize: 8, fontWeight: 'bold' }} />
+                  <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
+                  <Radar name="Perfil" dataKey="score" stroke="#1e1b4b" strokeWidth={3} fill="#4f46e5" fillOpacity={0.45} />
+                </RadarChart>
              </div>
            </div>
 

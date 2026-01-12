@@ -184,8 +184,8 @@ const App: React.FC = () => {
   if (quizState === 'lead-capture') {
     return (
       <div className="flex flex-col min-h-screen">
-        <LeadCapture onComplete={handleLeadSubmit} onManualMode={handleDirectManualEntry} />
-        <footer className="w-full py-4 bg-[#0f172a] text-center border-t border-white/5 relative z-10">
+        <LeadCapture onComplete={handleLeadSubmit} />
+        <footer className="w-full py-6 bg-[#0f172a] text-center border-t border-white/5 relative z-10">
           <p className="text-[10px] font-bold text-slate-500 tracking-[0.3em] uppercase">
             powered By <span className="text-indigo-400">JOI.A.</span>
           </p>
@@ -199,27 +199,6 @@ const App: React.FC = () => {
   return (
     <div className="min-h-screen bg-slate-50 font-sans text-slate-900 selection:bg-indigo-100 selection:text-indigo-900 flex flex-col">
       
-      {quizState !== 'intro' && quizState !== 'welcome' && quizState !== 'disclaimer' && (
-        <header className="bg-white/80 backdrop-blur-md border-b border-slate-200/60 sticky top-0 z-50">
-          <div className="max-w-6xl mx-auto px-6 h-20 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="bg-gradient-to-tr from-indigo-600 to-violet-600 p-2 rounded-lg shadow-lg shadow-indigo-500/20">
-                <Layers className="w-5 h-5 text-white" />
-              </div>
-              <span className="font-bold text-xl tracking-tight text-slate-900">Insight<span className="text-indigo-600">360</span></span>
-            </div>
-            {userInfo && (
-              <div className="hidden md:flex items-center gap-2">
-                <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-xs">
-                  {userInfo.name.charAt(0)}
-                </div>
-                <span className="text-sm font-medium text-slate-600">{userInfo.name.split(' ')[0]}</span>
-              </div>
-            )}
-          </div>
-        </header>
-      )}
-
       <main className="flex flex-col items-center justify-start flex-grow w-full relative">
         {quizState === 'disclaimer' && <Disclaimer onAccept={handleDisclaimerAccept} />}
         {quizState === 'welcome' && <WelcomeWizard onComplete={handleWelcomeComplete} />}
@@ -227,46 +206,46 @@ const App: React.FC = () => {
           <div className="min-h-screen w-full flex items-center justify-center bg-[#0f172a] p-4 relative overflow-hidden">
              <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-600/10 rounded-full blur-[100px] pointer-events-none" />
              <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-violet-600/10 rounded-full blur-[100px] pointer-events-none" />
-            <div className="max-w-3xl w-full px-8 py-16 text-center animate-fade-in-up bg-white/5 backdrop-blur-xl border border-white/10 rounded-[2.5rem] shadow-2xl relative z-10">
-              <div className="inline-flex items-center justify-center p-4 bg-gradient-to-br from-indigo-500/20 to-violet-500/20 rounded-2xl mb-8 border border-white/5 shadow-inner">
-                <Layers className="w-12 h-12 text-indigo-300 drop-shadow-lg" />
+            <div className="max-w-3xl w-full px-6 py-12 md:py-16 text-center animate-fade-in-up bg-white/5 backdrop-blur-xl border border-white/10 rounded-[2rem] md:rounded-[2.5rem] shadow-2xl relative z-10">
+              <div className="inline-flex items-center justify-center p-4 bg-gradient-to-br from-indigo-500/20 to-violet-500/20 rounded-2xl mb-6 md:mb-8 border border-white/5 shadow-inner">
+                <Layers className="w-10 h-10 md:w-12 md:h-12 text-indigo-300 drop-shadow-lg" />
               </div>
-              <h1 className="text-4xl md:text-6xl font-extrabold text-white mb-6 tracking-tight">
+              <h1 className="text-3xl md:text-6xl font-extrabold text-white mb-4 md:mb-6 tracking-tight leading-tight">
                 Mapeie seu <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-violet-400">Perfil Insight360</span>
               </h1>
-              <p className="text-lg md:text-xl text-slate-300 mb-12 leading-relaxed max-w-2xl mx-auto font-light">
+              <p className="text-base md:text-xl text-slate-300 mb-8 md:mb-12 leading-relaxed max-w-2xl mx-auto font-light px-2">
                 Olá, <span className="text-indigo-300 font-medium">{userInfo?.name.split(' ')[0]}</span>. 
                 Prepare-se para analisar suas 21 dimensões psicológicas e descobrir onde seus traços convergem.
               </p>
-              <div className="flex flex-col items-center gap-4">
+              <div className="flex flex-col items-center gap-4 w-full">
                 <button 
                   onClick={handleStart}
-                  className="group relative inline-flex items-center justify-center px-12 py-5 text-lg font-semibold text-white transition-all duration-300 bg-gradient-to-r from-indigo-600 to-violet-600 rounded-2xl shadow-xl shadow-indigo-500/40 hover:shadow-indigo-500/60 hover:-translate-y-1 hover:scale-105 w-full md:w-auto"
+                  className="group relative inline-flex items-center justify-center px-8 md:px-12 py-4 md:py-5 text-lg font-semibold text-white transition-all duration-300 bg-gradient-to-r from-indigo-600 to-violet-600 rounded-2xl shadow-xl shadow-indigo-500/40 hover:shadow-indigo-500/60 hover:-translate-y-1 hover:scale-105 w-full md:w-auto"
                 >
                   Iniciar Análise (42 Questões)
                   <ArrowRight className="ml-3 w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </button>
               </div>
-              <p className="mt-8 text-xs text-slate-500 uppercase tracking-widest font-medium italic">ANÁLISE PREMIUM ATIVADA</p>
+              <p className="mt-8 text-[10px] md:text-xs text-slate-500 uppercase tracking-widest font-medium italic">ANÁLISE PREMIUM ATIVADA</p>
             </div>
           </div>
         )}
 
         {quizState === 'manual_input' && (
-          <div className="w-full max-w-5xl px-4 py-8 animate-fade-in">
-            <div className="bg-white rounded-[2rem] shadow-xl p-6 md:p-8">
-              <div className="flex items-center justify-between mb-8 pb-6 border-b border-slate-100">
+          <div className="w-full max-w-5xl px-4 py-6 md:py-8 animate-fade-in">
+            <div className="bg-white rounded-[1.5rem] md:rounded-[2rem] shadow-xl p-5 md:p-8">
+              <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-100">
                 <div>
-                  <h2 className="text-2xl font-bold text-slate-900">Entrada Manual de Dados</h2>
-                  <p className="text-slate-500">Transcreva os resultados (%) do seu documento.</p>
+                  <h2 className="text-xl md:text-2xl font-bold text-slate-900 leading-tight">Entrada Manual</h2>
+                  <p className="text-sm text-slate-500">Transcreva os resultados do documento.</p>
                 </div>
-                <button onClick={() => setQuizState('lead-capture')} className="text-sm text-slate-400 hover:text-rose-500 transition-colors">Cancelar</button>
+                <button onClick={() => setQuizState('lead-capture')} className="text-xs text-slate-400 hover:text-rose-500 transition-colors">Cancelar</button>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4">
                 {DIMENSIONS.map((dim) => (
-                  <div key={dim.id} className="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                  <div key={dim.id} className="bg-slate-50 p-3 rounded-xl border border-slate-100">
                     <div className="flex justify-between mb-2 items-center">
-                      <label className="text-sm font-semibold text-slate-700 block truncate flex-1" title={dim.name}>{dim.name}</label>
+                      <label className="text-xs font-bold text-slate-700 block truncate flex-1" title={dim.name}>{dim.name}</label>
                       <input 
                         type="number" min="0" max="100"
                         value={manualScores[dim.id] || 0}
@@ -274,21 +253,21 @@ const App: React.FC = () => {
                           const val = Math.min(100, Math.max(0, parseInt(e.target.value) || 0));
                           setManualScores({...manualScores, [dim.id]: val});
                         }}
-                        className="w-16 text-right font-bold text-indigo-600 bg-white border border-slate-200 rounded px-2 py-1 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+                        className="w-14 text-right font-bold text-indigo-600 bg-white border border-slate-200 rounded px-1 py-0.5 text-xs focus:ring-2 focus:ring-indigo-500 outline-none"
                       />
-                      <span className="text-xs text-slate-400 ml-1">%</span>
+                      <span className="text-[10px] text-slate-400 ml-1">%</span>
                     </div>
                     <input 
                       type="range" min="0" max="100" 
                       value={manualScores[dim.id] || 0}
                       onChange={(e) => setManualScores({...manualScores, [dim.id]: parseInt(e.target.value)})}
-                      className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600 hover:bg-slate-300 transition-colors"
+                      className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"
                     />
                   </div>
                 ))}
               </div>
-              <div className="mt-8 pt-6 border-t border-slate-100 flex justify-end">
-                 <button onClick={handleManualSubmit} className="flex items-center gap-2 px-8 py-4 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-500/20 hover:-translate-y-1 font-bold">
+              <div className="mt-8 pt-6 border-t border-slate-100 flex justify-center md:justify-end">
+                 <button onClick={handleManualSubmit} className="flex items-center justify-center gap-2 w-full md:w-auto px-8 py-4 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-500/20 font-bold">
                    <Save className="w-5 h-5" /> Gerar Relatório Premium
                  </button>
               </div>
@@ -297,11 +276,11 @@ const App: React.FC = () => {
         )}
 
         {quizState === 'test' && currentQuestion && (
-          <div className="w-full max-w-5xl px-4 py-8">
+          <div className="w-full max-w-5xl px-4 py-4 md:py-8">
             {shakeQuestion && (
-              <div className="fixed top-24 left-1/2 -translate-x-1/2 z-[60] bg-rose-600 text-white px-6 py-3 rounded-xl animate-bounce shadow-2xl flex items-center gap-3 border border-rose-400">
-                <div className="bg-white/20 p-1 rounded-full"><Brain className="w-4 h-4" /></div>
-                <span className="font-bold">Atenção: Por favor, responda esta questão para prosseguir.</span>
+              <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[60] bg-rose-600 text-white px-5 py-3 rounded-xl animate-bounce shadow-2xl flex items-center gap-3 border border-rose-400 w-[90%] md:w-auto">
+                <Brain className="w-4 h-4 flex-shrink-0" />
+                <span className="font-bold text-sm">Responda esta questão para prosseguir.</span>
               </div>
             )}
             <div className={shakeQuestion ? "animate-shake" : ""}>
@@ -319,14 +298,14 @@ const App: React.FC = () => {
         )}
 
         {quizState === 'calculating' && (
-          <div className="min-h-[80vh] flex flex-col items-center justify-center text-center p-4">
-             <div className="relative w-32 h-32 mb-8">
+          <div className="min-h-[70vh] flex flex-col items-center justify-center text-center p-6">
+             <div className="relative w-24 h-24 md:w-32 md:h-32 mb-6 md:mb-8">
                <div className="absolute inset-0 border-4 border-indigo-100 rounded-full"></div>
                <div className="absolute inset-0 border-4 border-indigo-600 rounded-full border-t-transparent animate-spin"></div>
-               <Brain className="absolute inset-0 m-auto w-12 h-12 text-indigo-600 animate-pulse" />
+               <Brain className="absolute inset-0 m-auto w-10 h-10 md:w-12 md:h-12 text-indigo-600 animate-pulse" />
              </div>
-            <h2 className="text-3xl font-bold text-slate-900 mb-2">Gerando Relatório Premium</h2>
-            <p className="text-slate-500 text-lg max-w-md mx-auto">
+            <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-2">Processando Dados</h2>
+            <p className="text-slate-500 text-base md:text-lg max-w-md mx-auto">
               Nossa IA está cruzando suas 42 respostas para mapear suas 21 dimensões psicológicas...
             </p>
           </div>
@@ -342,7 +321,7 @@ const App: React.FC = () => {
         )}
       </main>
 
-      <footer className="w-full py-6 mt-auto border-t border-slate-200/60 bg-white/50 backdrop-blur-sm text-center print:hidden">
+      <footer className="w-full py-8 mt-auto border-t border-slate-200/60 bg-white/50 backdrop-blur-sm text-center print:hidden">
         <p className="text-[10px] font-bold text-slate-400 tracking-[0.3em] uppercase">
           powered By <span className="text-indigo-600">JOI.A.</span>
         </p>

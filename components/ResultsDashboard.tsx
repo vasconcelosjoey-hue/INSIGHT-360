@@ -37,20 +37,11 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ results, use
   };
 
   const handlePrint = () => {
-    // Salva o título original
     const originalTitle = document.title;
-    
-    // Formata o nome do arquivo para o PDF (remove espaços e caracteres especiais)
     const safeName = userInfo?.name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '_') || 'Candidato';
     const fileName = `Relatorio_Insight360_${safeName}_${testId}`;
-    
-    // Altera o título para que o navegador sugira este nome ao salvar
     document.title = fileName;
-    
-    // Dispara a impressão
     window.print();
-    
-    // Restaura o título após a impressão (timeout para garantir que o diálogo de impressão capturou o título)
     setTimeout(() => {
       document.title = originalTitle;
     }, 1000);
@@ -62,47 +53,47 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ results, use
       {/* --- ON SCREEN DASHBOARD --- */}
       <div className="print:hidden">
         {/* Hero Header */}
-        <div className="text-center mb-10 animate-fade-in-up">
-           <div className="inline-block mb-4">
-             <div className="flex items-center gap-2 bg-indigo-600 px-4 py-2 rounded-full shadow-lg border border-indigo-400">
-               <BadgeCheck className="w-4 h-4 text-white" />
-               <span className="text-xs font-bold text-white uppercase tracking-wider">Relatório Premium Verificado</span>
+        <div className="text-center mb-8 md:mb-10 animate-fade-in-up">
+           <div className="inline-block mb-3 md:mb-4">
+             <div className="flex items-center gap-2 bg-indigo-600 px-3 md:px-4 py-1.5 md:py-2 rounded-full shadow-lg border border-indigo-400">
+               <BadgeCheck className="w-3.5 h-3.5 md:w-4 md:h-4 text-white" />
+               <span className="text-[10px] md:text-xs font-bold text-white uppercase tracking-wider">Relatório Premium</span>
              </div>
            </div>
-          <h1 className="text-4xl md:text-5xl font-extrabold text-slate-900 mb-4 tracking-tight">
+          <h1 className="text-3xl md:text-5xl font-extrabold text-slate-900 mb-3 md:mb-4 tracking-tight leading-tight px-2">
             Relatório Insight<span className="text-indigo-600">360</span>
           </h1>
-          <div className="flex flex-col items-center justify-center gap-2">
-             <p className="text-lg text-slate-600 font-medium">
-               Participante: <strong className="text-slate-900">{userInfo?.name}</strong>
+          <div className="flex flex-col items-center justify-center gap-1 md:gap-2 px-4">
+             <p className="text-base md:text-lg text-slate-600 font-medium leading-snug">
+               <strong className="text-slate-900">{userInfo?.name}</strong>
              </p>
-             <div className="flex items-center gap-4 text-sm text-slate-400">
+             <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-[11px] md:text-sm text-slate-400">
                 <span className="flex items-center gap-1"><Hash className="w-3.5 h-3.5" /> ID: <span className="text-indigo-600 font-mono font-bold">{testId}</span></span>
-                <span className="flex items-center gap-1"><Mail className="w-3.5 h-3.5" /> {userInfo?.email}</span>
-                <span className="flex items-center gap-1"><Phone className="w-3.5 h-3.5" /> {userInfo?.whatsapp}</span>
+                {userInfo?.email && <span className="flex items-center gap-1"><Mail className="w-3.5 h-3.5" /> {userInfo.email}</span>}
+                {userInfo?.whatsapp && <span className="flex items-center gap-1"><Phone className="w-3.5 h-3.5" /> {userInfo.whatsapp}</span>}
              </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 mb-12">
+        <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 md:gap-8 mb-10 md:mb-12">
           
           {/* Chart Section */}
-          <div className="xl:col-span-7 bg-white rounded-[2rem] shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden flex flex-col animate-slide-in-left">
-            <div className="p-8 border-b border-slate-50 flex justify-between items-center">
-              <h3 className="text-xl font-bold text-slate-800 flex items-center gap-2">
+          <div className="xl:col-span-7 bg-white rounded-[1.5rem] md:rounded-[2rem] shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden flex flex-col animate-slide-in-left">
+            <div className="p-5 md:p-8 border-b border-slate-50 flex justify-between items-center">
+              <h3 className="text-lg md:text-xl font-bold text-slate-800 flex items-center gap-2">
                 <Layers className="w-5 h-5 text-indigo-500" />
-                Mapeamento das 21 Dimensões
+                Seu Gráfico 360°
               </h3>
-              <span className="text-xs font-medium bg-indigo-100 text-indigo-600 px-3 py-1 rounded-full font-bold">Análise 360°</span>
+              <span className="text-[10px] md:text-xs font-bold bg-indigo-100 text-indigo-600 px-2 md:px-3 py-1 rounded-full uppercase">Multidimensional</span>
             </div>
-            <div className="p-4 flex-grow flex items-center justify-center bg-slate-50/30">
-              <div className="w-full h-[400px] md:h-[500px]">
+            <div className="p-2 md:p-4 flex-grow flex items-center justify-center bg-slate-50/30">
+              <div className="w-full h-[320px] sm:h-[400px] md:h-[500px]">
                 <ResponsiveContainer width="100%" height="100%">
-                  <RadarChart cx="50%" cy="50%" outerRadius="70%" data={results}>
+                  <RadarChart cx="50%" cy="50%" outerRadius="75%" data={results}>
                     <PolarGrid gridType="polygon" stroke="#cbd5e1" strokeDasharray="4 4" />
                     <PolarAngleAxis 
                       dataKey="dimensionName" 
-                      tick={{ fill: '#475569', fontSize: 10, fontWeight: 700 }} 
+                      tick={{ fill: '#475569', fontSize: 9, fontWeight: 700 }} 
                     />
                     <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
                     <Radar
@@ -114,8 +105,8 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ results, use
                       fillOpacity={0.4}
                     />
                     <Tooltip 
-                      contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)', padding: '12px' }}
-                      itemStyle={{ color: '#1e293b', fontWeight: 'bold' }}
+                      contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)', padding: '8px' }}
+                      itemStyle={{ color: '#1e293b', fontWeight: 'bold', fontSize: '12px' }}
                     />
                   </RadarChart>
                 </ResponsiveContainer>
@@ -124,32 +115,32 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ results, use
           </div>
 
           {/* AI Analysis Section */}
-          <div className="xl:col-span-5 flex flex-col gap-6 animate-slide-in-right">
-            <div className="bg-gradient-to-br from-slate-900 to-indigo-950 p-8 rounded-[2rem] shadow-2xl text-white relative overflow-hidden flex-grow flex flex-col border border-white/5">
-              <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
+          <div className="xl:col-span-5 flex flex-col gap-5 md:gap-6 animate-slide-in-right">
+            <div className="bg-gradient-to-br from-slate-900 to-indigo-950 p-6 md:p-8 rounded-[1.5rem] md:rounded-[2rem] shadow-2xl text-white relative overflow-hidden flex-grow flex flex-col border border-white/5">
+              <div className="absolute top-0 right-0 w-48 h-48 md:w-64 md:h-64 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
               
-              <div className="relative z-10 mb-6 flex items-center gap-3">
+              <div className="relative z-10 mb-4 md:mb-6 flex items-center gap-3">
                 <div className="bg-white/10 p-2 rounded-lg backdrop-blur-md">
-                   <Sparkles className="w-6 h-6 text-amber-300" />
+                   <Sparkles className="w-5 h-5 md:w-6 md:h-6 text-amber-300" />
                 </div>
-                <h3 className="text-2xl font-bold tracking-tight">Análise Cognitiva IA</h3>
+                <h3 className="text-xl md:text-2xl font-bold tracking-tight">Análise Cognitiva IA</h3>
               </div>
               
               <div className="relative z-10 flex-grow">
                 {!aiAnalysis ? (
-                  <div className="h-full flex flex-col items-center justify-center text-center space-y-6 py-8">
-                    <p className="text-slate-300 leading-relaxed text-sm">
+                  <div className="h-full flex flex-col items-center justify-center text-center space-y-4 md:space-y-6 py-6 md:py-8">
+                    <p className="text-slate-300 leading-relaxed text-sm md:text-base font-light">
                       Nossa inteligência artificial avançada cruzará suas 21 dimensões para gerar uma síntese personalizada do seu funcionamento psicológico.
                     </p>
                     <button 
                       onClick={handleGenerateAnalysis}
                       disabled={loadingAi}
-                      className="w-full py-4 bg-white text-indigo-950 rounded-xl font-bold hover:bg-indigo-50 transition-all shadow-lg hover:shadow-white/20 hover:-translate-y-1 disabled:opacity-70 disabled:translate-y-0 flex items-center justify-center gap-2"
+                      className="w-full py-3.5 md:py-4 bg-white text-indigo-950 rounded-xl font-bold hover:bg-indigo-50 transition-all shadow-lg active:scale-95 disabled:opacity-70 flex items-center justify-center gap-2 text-sm md:text-base"
                     >
                       {loadingAi ? (
                         <>
-                          <div className="w-5 h-5 border-2 border-indigo-900 border-t-transparent rounded-full animate-spin"></div>
-                          Processando Diagnóstico...
+                          <div className="w-4 h-4 border-2 border-indigo-900 border-t-transparent rounded-full animate-spin"></div>
+                          Processando...
                         </>
                       ) : (
                         <>Ativar Análise Premium <Sparkles className="w-4 h-4" /></>
@@ -157,8 +148,8 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ results, use
                     </button>
                   </div>
                 ) : (
-                  <div className="bg-white/10 backdrop-blur-md rounded-xl p-6 h-[400px] overflow-y-auto custom-scrollbar border border-white/5">
-                    <div className="prose prose-invert prose-sm max-w-none text-slate-100 whitespace-pre-line leading-relaxed italic">
+                  <div className="bg-white/10 backdrop-blur-md rounded-xl p-4 md:p-6 h-[300px] md:h-[400px] overflow-y-auto custom-scrollbar border border-white/5">
+                    <div className="prose prose-invert prose-sm max-w-none text-slate-100 whitespace-pre-line leading-relaxed italic text-xs md:text-sm">
                       {aiAnalysis}
                     </div>
                   </div>
@@ -166,22 +157,22 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ results, use
               </div>
             </div>
             
-             <div className="bg-white p-6 rounded-[2rem] shadow-lg border border-slate-100">
+             <div className="bg-white p-5 md:p-6 rounded-[1.5rem] md:rounded-[2rem] shadow-lg border border-slate-100">
                 <div className="flex justify-between items-center mb-4">
-                  <h4 className="font-bold text-slate-700">Métricas de Performance</h4>
-                  <div className="flex gap-2">
-                    <span className="w-3 h-3 rounded-full bg-emerald-500"></span>
-                    <span className="w-3 h-3 rounded-full bg-rose-500"></span>
+                  <h4 className="font-bold text-slate-700 text-sm md:text-base uppercase tracking-tight">Performance</h4>
+                  <div className="flex gap-1.5">
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                    <span className="w-2.5 h-2.5 rounded-full bg-rose-500"></span>
                   </div>
                 </div>
-                <div className="flex gap-4 text-center">
-                    <div className="flex-1 bg-emerald-50 rounded-xl p-4 border border-emerald-100">
-                        <div className="text-3xl font-extrabold text-emerald-700">{highScores.length}</div>
-                        <div className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest mt-1">Traços Fortes</div>
+                <div className="flex gap-3 md:gap-4 text-center">
+                    <div className="flex-1 bg-emerald-50 rounded-xl p-3 md:p-4 border border-emerald-100">
+                        <div className="text-2xl md:text-3xl font-extrabold text-emerald-700">{highScores.length}</div>
+                        <div className="text-[9px] md:text-[10px] font-bold text-emerald-600 uppercase tracking-widest mt-1">Fortes</div>
                     </div>
-                    <div className="flex-1 bg-rose-50 rounded-xl p-4 border border-rose-100">
-                        <div className="text-3xl font-extrabold text-rose-700">{lowScores.length}</div>
-                        <div className="text-[10px] font-bold text-rose-600 uppercase tracking-widest mt-1">Pontos de Atenção</div>
+                    <div className="flex-1 bg-rose-50 rounded-xl p-3 md:p-4 border border-rose-100">
+                        <div className="text-2xl md:text-3xl font-extrabold text-rose-700">{lowScores.length}</div>
+                        <div className="text-[9px] md:text-[10px] font-bold text-rose-600 uppercase tracking-widest mt-1">Atenção</div>
                     </div>
                 </div>
              </div>
@@ -189,16 +180,16 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ results, use
         </div>
 
         {/* Dimension Details List (Compact) */}
-        <div className="bg-white rounded-[2rem] p-8 mb-12 shadow-xl border border-slate-100">
-          <h3 className="text-xl font-bold text-slate-800 mb-8 border-b border-slate-100 pb-4">Detalhamento das Dimensões</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-6">
+        <div className="bg-white rounded-[1.5rem] md:rounded-[2rem] p-6 md:p-8 mb-10 md:mb-12 shadow-xl border border-slate-100">
+          <h3 className="text-lg md:text-xl font-bold text-slate-800 mb-6 md:mb-8 border-b border-slate-100 pb-3 md:pb-4 uppercase tracking-tight">Detalhamento Completo</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 md:gap-x-8 gap-y-4 md:gap-y-6">
             {results.map(dim => (
               <div key={dim.dimensionId} className="group">
                 <div className="flex justify-between items-center mb-1">
-                  <span className="text-sm font-bold text-slate-700 group-hover:text-indigo-600 transition-colors">{dim.dimensionName}</span>
-                  <span className={`text-sm font-black ${dim.score >= 70 ? 'text-emerald-600' : dim.score <= 30 ? 'text-rose-700' : 'text-slate-500'}`}>{dim.score}%</span>
+                  <span className="text-[11px] md:text-sm font-bold text-slate-700 group-hover:text-indigo-600 transition-colors uppercase tracking-tight">{dim.dimensionName}</span>
+                  <span className={`text-[11px] md:text-sm font-black ${dim.score >= 70 ? 'text-emerald-600' : dim.score <= 30 ? 'text-rose-600' : 'text-slate-500'}`}>{dim.score}%</span>
                 </div>
-                <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                <div className="w-full h-1 md:h-1.5 bg-slate-100 rounded-full overflow-hidden">
                    <div 
                     className={`h-full transition-all duration-1000 ${dim.score >= 70 ? 'bg-emerald-500' : dim.score <= 30 ? 'bg-rose-500' : 'bg-indigo-400'}`}
                     style={{ width: `${dim.score}%` }}
@@ -210,22 +201,22 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ results, use
         </div>
 
         {/* Action Buttons */}
-        <div className="flex flex-col sm:flex-row justify-center gap-6 pb-20 animate-fade-in">
+        <div className="flex flex-col sm:flex-row justify-center gap-4 md:gap-6 pb-12 md:pb-20 animate-fade-in px-2">
            <button 
             onClick={handlePrint}
-            className="flex items-center justify-center gap-3 px-10 py-4 bg-indigo-600 text-white rounded-2xl hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-500/30 hover:-translate-y-1 font-bold text-lg group"
+            className="flex items-center justify-center gap-2 md:gap-3 px-8 md:px-10 py-4 bg-indigo-600 text-white rounded-2xl hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-500/30 active:scale-95 font-bold text-base md:text-lg group w-full sm:w-auto"
           >
-            <Printer className="w-6 h-6" />
-            Exportar Relatório PDF
-            <span className="bg-white/20 px-2 py-0.5 rounded text-xs group-hover:bg-white/30 transition-colors ml-2 uppercase">Premium</span>
+            <Printer className="w-5 h-5 md:w-6 md:h-6" />
+            Salvar PDF
+            <span className="bg-white/20 px-2 py-0.5 rounded text-[10px] ml-1 uppercase">Premium</span>
           </button>
 
           <button 
             onClick={onRestart}
-            className="flex items-center justify-center gap-3 px-10 py-4 bg-white border-2 border-slate-200 text-slate-500 rounded-2xl hover:border-slate-400 hover:text-slate-700 transition-all font-bold text-lg"
+            className="flex items-center justify-center gap-2 md:gap-3 px-8 md:px-10 py-4 bg-white border-2 border-slate-200 text-slate-500 rounded-2xl hover:border-slate-400 hover:text-slate-700 transition-all active:scale-95 font-bold text-base md:text-lg w-full sm:w-auto"
           >
             <RefreshCcw className="w-5 h-5" />
-            Novo Diagnóstico
+            Recomeçar
           </button>
         </div>
       </div>
@@ -269,7 +260,6 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ results, use
         {/* Print Content Grid */}
         <div className="grid grid-cols-2 gap-10 mb-8">
            <div className="bg-white rounded-xl p-4 border border-slate-200 flex items-center justify-center">
-             {/* Dimensões fixas para garantir renderização correta no PDF */}
              <div className="w-[350px] h-[350px]">
                 <RadarChart cx={175} cy={175} outerRadius={120} width={350} height={350} data={results}>
                   <PolarGrid gridType="polygon" stroke="#64748b" strokeWidth={1} />

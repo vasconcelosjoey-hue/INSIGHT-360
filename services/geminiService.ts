@@ -1,3 +1,4 @@
+
 import { GoogleGenAI } from "@google/genai";
 import { ProcessedResult } from '../types';
 
@@ -5,14 +6,13 @@ export const generatePsychologicalAnalysis = async (results: ProcessedResult[]):
   try {
     const apiKey = process.env.API_KEY;
     if (!apiKey) {
-        // Fallback for demo purposes if no key is provided in environment
         return "Para gerar uma análise detalhada com IA, configure sua API Key do Google Gemini no ambiente. Por enquanto, baseie-se nos gráficos e pontuações apresentados.";
     }
 
     const ai = new GoogleGenAI({ apiKey: apiKey });
     
     // Format the results for the prompt
-    const scoresSummary = results.map(r => `${r.dimensionName}: ${r.score.toFixed(1)}`).join('\n');
+    const scoresSummary = results.map(r => `${r.dimensionName}: ${r.score.toFixed(0)}%`).join('\n');
 
     const prompt = `
       Atue como um psicólogo especialista em psicometria e análise comportamental.
@@ -32,7 +32,7 @@ export const generatePsychologicalAnalysis = async (results: ProcessedResult[]):
     `;
 
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: 'gemini-3-flash-preview',
       contents: prompt,
     });
 

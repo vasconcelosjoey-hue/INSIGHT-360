@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 import { QUESTIONS, DIMENSIONS, TOTAL_QUESTIONS } from './constants';
 import { ProcessedResult, QuizState, UserInfo } from './types';
@@ -19,6 +19,7 @@ const App: React.FC = () => {
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
   const [shakeQuestion, setShakeQuestion] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isValidatingCompleteness, setIsValidatingCompleteness] = useState(false);
   
   // State for Manual Input Mode
   const [manualScores, setManualScores] = useState<Record<string, number>>({});
@@ -40,24 +41,16 @@ const App: React.FC = () => {
     setQuizState('test');
     setCurrentQuestionIndex(0);
     setAnswers({});
+    setIsValidatingCompleteness(false);
   };
 
-  // Função para inicializar scores zerados ou 50%
   const initializeManualScores = () => {
     const initial: Record<string, number> = {};
     DIMENSIONS.forEach(d => initial[d.id] = 50);
     setManualScores(initial);
   };
 
-  // Função para abrir o modo manual (vindo do Intro)
-  const handleManualMode = () => {
-    initializeManualScores();
-    setQuizState('manual_input');
-  };
-
-  // Função para abrir modo manual DIRETAMENTE da tela inicial (bypass)
   const handleDirectManualEntry = () => {
-    // Define um usuário genérico para não quebrar a exibição
     setUserInfo({
       name: 'Visitante (Manual)',
       email: '',
@@ -79,21 +72,18 @@ const App: React.FC = () => {
     setQuizState('results');
   };
 
-  // Função para simular preenchimento (Modo Demo)
-  const handleSimulate = () => {
-    const randomAnswers: Record<number, number> = {};
-    QUESTIONS.forEach(q => {
-      // Gera respostas aleatórias entre 1 e 5
-      randomAnswers[q.id] = Math.floor(Math.random() * 5) + 1;
-    });
-    setAnswers(randomAnswers);
-    calculateResults(randomAnswers);
-  };
-
   const handleAnswer = (value: number) => {
     const currentQId = QUESTIONS[currentQuestionIndex].id;
     const newAnswers = { ...answers, [currentQId]: value };
     setAnswers(newAnswers);
+
+    // Se estivermos em modo de validação (corrigindo algo que faltou)
+    if (isValidatingCompleteness) {
+      setTimeout(() => {
+        validateAndFinish(newAnswers);
+      }, 300);
+      return;
+    }
 
     if (currentQuestionIndex < TOTAL_QUESTIONS - 1) {
       setTimeout(() => {
@@ -132,10 +122,13 @@ const App: React.FC = () => {
     }
 
     if (firstUnansweredIndex !== -1) {
+      // Ativa o modo de validação e pula para a pergunta que falta
+      setIsValidatingCompleteness(true);
       setCurrentQuestionIndex(firstUnansweredIndex);
       setShakeQuestion(true);
       setTimeout(() => setShakeQuestion(false), 800);
     } else {
+      // Tudo respondido, pode calcular
       calculateResults(currentAnswers);
     }
   };
@@ -168,17 +161,15 @@ const App: React.FC = () => {
       return {
         dimensionId: dim.id,
         dimensionName: dim.name,
-        score: normalized,
+        score: Math.round(normalized),
         description: dim.description
       };
     });
 
-    // Save to Firebase (Non-blocking / Fire and Forget)
     if (userInfo && userInfo.email !== '') {
       saveTestResult(userInfo, processed).catch(err => console.warn("Background save failed:", err));
     }
 
-    // Delay visual fixo para UX
     setTimeout(() => {
       setIsSaving(false);
       setResults(processed);
@@ -243,7 +234,7 @@ const App: React.FC = () => {
               
               <p className="text-lg md:text-xl text-slate-300 mb-12 leading-relaxed max-w-2xl mx-auto font-light">
                 Olá, <span className="text-indigo-300 font-medium">{userInfo?.name.split(' ')[0]}</span>. 
-                Prepare-se para analisar suas 21 dimensões psicológicas e descobrir onde seus traços convergem.
+                Prepare-se para analisar suas 21 dimensões psicológicas (42 perguntas rápidas) e descobrir onde seus traços convergem.
               </p>
               
               <div className="flex flex-col items-center gap-4">
@@ -251,13 +242,13 @@ const App: React.FC = () => {
                   onClick={handleStart}
                   className="group relative inline-flex items-center justify-center px-12 py-5 text-lg font-semibold text-white transition-all duration-300 bg-gradient-to-r from-indigo-600 to-violet-600 rounded-2xl shadow-xl shadow-indigo-500/40 hover:shadow-indigo-500/60 hover:-translate-y-1 hover:scale-105 w-full md:w-auto"
                 >
-                  Iniciar Análise (Questionário)
+                  Iniciar Análise (Compacta)
                   <ArrowRight className="ml-3 w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </button>
               </div>
               
               <p className="mt-8 text-xs text-slate-500 uppercase tracking-widest font-medium">
-                Tempo estimado: 5-8 minutos
+                TEMPO ESTIMADO: 3-5 MINUTOS
               </p>
             </div>
           </div>
@@ -325,9 +316,9 @@ const App: React.FC = () => {
         {quizState === 'test' && (
           <div className="w-full max-w-5xl px-4 py-8">
             {shakeQuestion && (
-              <div className="fixed top-24 left-1/2 -translate-x-1/2 z-50 bg-rose-50 border border-rose-200 text-rose-700 px-6 py-3 rounded-xl animate-bounce shadow-xl flex items-center gap-3">
-                <div className="bg-rose-100 p-1 rounded-full"><Brain className="w-4 h-4" /></div>
-                <span className="font-medium">Por favor, responda esta pergunta antes de avançar.</span>
+              <div className="fixed top-24 left-1/2 -translate-x-1/2 z-[60] bg-rose-600 text-white px-6 py-3 rounded-xl animate-bounce shadow-2xl flex items-center gap-3 border border-rose-400">
+                <div className="bg-white/20 p-1 rounded-full"><Brain className="w-4 h-4" /></div>
+                <span className="font-bold">Atenção: Por favor, responda esta questão para prosseguir.</span>
               </div>
             )}
             <div className={shakeQuestion ? "animate-shake" : ""}>

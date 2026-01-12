@@ -23,6 +23,9 @@ export const QuizStep: React.FC<QuizStepProps> = ({
   onNext
 }) => {
   
+  // Guard clause
+  if (!question) return null;
+
   const options = [
     { value: 5, label: "Concordo totalmente", color: "bg-indigo-600" },
     { value: 4, label: "Concordo parcialmente", color: "bg-indigo-400" },

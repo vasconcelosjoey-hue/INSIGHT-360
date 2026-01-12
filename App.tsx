@@ -80,7 +80,10 @@ const App: React.FC = () => {
   };
 
   const handleAnswer = (value: number) => {
-    const currentQId = QUESTIONS[currentQuestionIndex].id;
+    const currentQuestion = QUESTIONS[currentQuestionIndex];
+    if (!currentQuestion) return;
+
+    const currentQId = currentQuestion.id;
     const newAnswers = { ...answers, [currentQId]: value };
     setAnswers(newAnswers);
 
@@ -93,7 +96,7 @@ const App: React.FC = () => {
 
     if (currentQuestionIndex < TOTAL_QUESTIONS - 1) {
       setTimeout(() => {
-        setCurrentQuestionIndex(prev => prev + 1);
+        setCurrentQuestionIndex(prev => Math.min(prev + 1, TOTAL_QUESTIONS - 1));
       }, 300);
     } else {
       setTimeout(() => {
@@ -103,14 +106,12 @@ const App: React.FC = () => {
   };
 
   const handlePrevious = () => {
-    if (currentQuestionIndex > 0) {
-      setCurrentQuestionIndex(prev => prev - 1);
-    }
+    setCurrentQuestionIndex(prev => Math.max(prev - 1, 0));
   };
 
   const handleNext = () => {
     if (currentQuestionIndex < TOTAL_QUESTIONS - 1) {
-      setCurrentQuestionIndex(prev => prev + 1);
+      setCurrentQuestionIndex(prev => Math.min(prev + 1, TOTAL_QUESTIONS - 1));
     } else {
       validateAndFinish(answers);
     }
@@ -119,8 +120,8 @@ const App: React.FC = () => {
   const validateAndFinish = (currentAnswers: Record<number, number>) => {
     let firstUnansweredIndex = -1;
     for (let i = 0; i < TOTAL_QUESTIONS; i++) {
-      const qId = QUESTIONS[i].id;
-      if (currentAnswers[qId] === undefined) {
+      const question = QUESTIONS[i];
+      if (question && currentAnswers[question.id] === undefined) {
         firstUnansweredIndex = i;
         break;
       }
@@ -148,7 +149,7 @@ const App: React.FC = () => {
 
     QUESTIONS.forEach(q => {
       const val = finalAnswers[q.id];
-      if (rawScores[q.dimensionId]) {
+      if (val !== undefined && rawScores[q.dimensionId]) {
         rawScores[q.dimensionId].push(val);
       }
     });
@@ -183,6 +184,8 @@ const App: React.FC = () => {
   if (quizState === 'lead-capture') {
     return <LeadCapture onComplete={handleLeadSubmit} onManualMode={handleDirectManualEntry} />;
   }
+
+  const currentQuestion = QUESTIONS[currentQuestionIndex];
 
   return (
     <div className="min-h-screen bg-slate-50 font-sans text-slate-900 selection:bg-indigo-100 selection:text-indigo-900">
@@ -284,7 +287,7 @@ const App: React.FC = () => {
           </div>
         )}
 
-        {quizState === 'test' && (
+        {quizState === 'test' && currentQuestion && (
           <div className="w-full max-w-5xl px-4 py-8">
             {shakeQuestion && (
               <div className="fixed top-24 left-1/2 -translate-x-1/2 z-[60] bg-rose-600 text-white px-6 py-3 rounded-xl animate-bounce shadow-2xl flex items-center gap-3 border border-rose-400">
@@ -294,10 +297,10 @@ const App: React.FC = () => {
             )}
             <div className={shakeQuestion ? "animate-shake" : ""}>
               <QuizStep 
-                question={QUESTIONS[currentQuestionIndex]}
+                question={currentQuestion}
                 currentNumber={currentQuestionIndex + 1}
                 totalQuestions={TOTAL_QUESTIONS}
-                selectedAnswer={answers[QUESTIONS[currentQuestionIndex].id]}
+                selectedAnswer={answers[currentQuestion.id]}
                 onAnswer={handleAnswer}
                 onPrevious={handlePrevious}
                 onNext={handleNext}

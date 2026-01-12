@@ -4,31 +4,35 @@ import { ProcessedResult } from '../types';
 
 export const generatePsychologicalAnalysis = async (results: ProcessedResult[]): Promise<string> => {
   try {
-    const apiKey = process.env.API_KEY;
-    if (!apiKey) {
-        return "Para gerar uma análise detalhada com IA, configure sua API Key do Google Gemini no ambiente. Por enquanto, baseie-se nos gráficos e pontuações apresentados.";
-    }
-
-    const ai = new GoogleGenAI({ apiKey: apiKey });
+    // Inicialização direta conforme diretrizes: assumimos que process.env.API_KEY existe.
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     
-    // Format the results for the prompt
+    // Formata o resumo das pontuações para a IA
     const scoresSummary = results.map(r => `${r.dimensionName}: ${r.score.toFixed(0)}%`).join('\n');
 
     const prompt = `
-      Atue como um psicólogo especialista em psicometria e análise comportamental.
-      Analise o seguinte perfil de personalidade baseado em 21 dimensões (escala 0-100).
+      Atue como um psicólogo organizacional de elite, especialista em análise psicométrica e orientação de carreira.
+      Analise o seguinte perfil comportamental baseado em 21 dimensões da arquitetura psicológica humana (escala 0-100).
       
-      DADOS DO PACIENTE:
+      DADOS DO PARTICIPANTE:
       ${scoresSummary}
       
-      TAREFA:
-      Forneça um resumo executivo de 3 parágrafos:
-      1. Pontos Fortes: Destaque as 3 características mais marcantes (pontuações mais altas ou equilibradas positivamente).
-      2. Pontos de Atenção: Destaque áreas que podem causar conflito ou sofrimento (pontuações muito baixas ou excessivamente altas que indiquem rigidez).
-      3. Sugestão de Desenvolvimento: Uma recomendação prática baseada na combinação única dos traços (ex: se tiver alta Empatia mas baixa Independência).
+      ESTRUTURA DA RESPOSTA (Obrigatória):
+      
+      1. SÍNTESE DO PERFIL: Descreva o "core" do comportamento deste indivíduo em um parágrafo.
+      
+      2. DIFERENCIAIS COMPETITIVOS: Identifique os 3 traços mais potentes e como eles geram valor.
+      
+      3. RISCOS E DESAFIOS: Pontue áreas onde o excesso ou a falta de um traço pode gerar gargalos de performance ou estresse.
+      
+      4. MAPA DE CARREIRA E MERCADO: Baseado na combinação dessas 21 dimensões, sugira explicitamente 3 áreas de atuação ou cargos específicos onde este perfil teria maior probabilidade de sucesso e satisfação. Justifique brevemente cada sugestão com base nos dados.
+      
+      5. PLANO DE AÇÃO: Uma recomendação prática e imediata para potencializar os resultados.
 
-      Use um tom profissional, acolhedor e direto. Fale diretamente com o usuário ("Você...").
-      Não liste todos os pontos, foque na síntese.
+      DIRETRIZES:
+      - Use um tom profissional, inspirador e direto. 
+      - Fale na segunda pessoa ("Você...").
+      - Foque na correlação entre os traços (ex: como sua alta Empatia combinada com sua baixa Inibição Social te torna um líder nato).
     `;
 
     const response = await ai.models.generateContent({
@@ -36,9 +40,9 @@ export const generatePsychologicalAnalysis = async (results: ProcessedResult[]):
       contents: prompt,
     });
 
-    return response.text || "Não foi possível gerar a análise no momento.";
+    return response.text || "A análise foi concluída, mas o conteúdo está vazio. Por favor, tente novamente.";
   } catch (error) {
     console.error("Erro ao chamar Gemini:", error);
-    return "Ocorreu um erro ao tentar gerar a análise de inteligência artificial. Verifique sua conexão ou tente novamente mais tarde.";
+    return "O sistema de IA está temporariamente indisponível devido a alta demanda. Por favor, utilize os gráficos e o detalhamento técnico abaixo para sua interpretação inicial.";
   }
 };

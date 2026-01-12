@@ -130,7 +130,7 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ results, use
                 {!aiAnalysis ? (
                   <div className="h-full flex flex-col items-center justify-center text-center space-y-4 md:space-y-6 py-6 md:py-8">
                     <p className="text-slate-300 leading-relaxed text-sm md:text-base font-light">
-                      Nossa inteligência artificial avançada cruzará suas 21 dimensões para gerar uma síntese personalizada do seu funcionamento psicológico.
+                      Nossa inteligência artificial analisará suas dimensões para gerar uma síntese personalizada e sugestões de carreira.
                     </p>
                     <button 
                       onClick={handleGenerateAnalysis}
@@ -140,15 +140,15 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ results, use
                       {loadingAi ? (
                         <>
                           <div className="w-4 h-4 border-2 border-indigo-900 border-t-transparent rounded-full animate-spin"></div>
-                          Processando...
+                          Mapeando Oportunidades...
                         </>
                       ) : (
-                        <>Ativar Análise Premium <Sparkles className="w-4 h-4" /></>
+                        <>Gerar Análise Premium <Sparkles className="w-4 h-4" /></>
                       )}
                     </button>
                   </div>
                 ) : (
-                  <div className="bg-white/10 backdrop-blur-md rounded-xl p-4 md:p-6 h-[300px] md:h-[400px] overflow-y-auto custom-scrollbar border border-white/5">
+                  <div className="bg-white/10 backdrop-blur-md rounded-xl p-4 md:p-6 h-[350px] md:h-[450px] overflow-y-auto custom-scrollbar border border-white/5">
                     <div className="prose prose-invert prose-sm max-w-none text-slate-100 whitespace-pre-line leading-relaxed italic text-xs md:text-sm">
                       {aiAnalysis}
                     </div>

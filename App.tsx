@@ -182,13 +182,22 @@ const App: React.FC = () => {
   };
 
   if (quizState === 'lead-capture') {
-    return <LeadCapture onComplete={handleLeadSubmit} onManualMode={handleDirectManualEntry} />;
+    return (
+      <div className="flex flex-col min-h-screen">
+        <LeadCapture onComplete={handleLeadSubmit} onManualMode={handleDirectManualEntry} />
+        <footer className="w-full py-4 bg-[#0f172a] text-center border-t border-white/5 relative z-10">
+          <p className="text-[10px] font-bold text-slate-500 tracking-[0.3em] uppercase">
+            powered By <span className="text-indigo-400">JOI.A.</span>
+          </p>
+        </footer>
+      </div>
+    );
   }
 
   const currentQuestion = QUESTIONS[currentQuestionIndex];
 
   return (
-    <div className="min-h-screen bg-slate-50 font-sans text-slate-900 selection:bg-indigo-100 selection:text-indigo-900">
+    <div className="min-h-screen bg-slate-50 font-sans text-slate-900 selection:bg-indigo-100 selection:text-indigo-900 flex flex-col">
       
       {quizState !== 'intro' && quizState !== 'welcome' && quizState !== 'disclaimer' && (
         <header className="bg-white/80 backdrop-blur-md border-b border-slate-200/60 sticky top-0 z-50">
@@ -211,7 +220,7 @@ const App: React.FC = () => {
         </header>
       )}
 
-      <main className="flex flex-col items-center justify-start min-h-[calc(100vh-80px)] w-full relative">
+      <main className="flex flex-col items-center justify-start flex-grow w-full relative">
         {quizState === 'disclaimer' && <Disclaimer onAccept={handleDisclaimerAccept} />}
         {quizState === 'welcome' && <WelcomeWizard onComplete={handleWelcomeComplete} />}
         {quizState === 'intro' && (
@@ -332,6 +341,13 @@ const App: React.FC = () => {
           />
         )}
       </main>
+
+      <footer className="w-full py-6 mt-auto border-t border-slate-200/60 bg-white/50 backdrop-blur-sm text-center print:hidden">
+        <p className="text-[10px] font-bold text-slate-400 tracking-[0.3em] uppercase">
+          powered By <span className="text-indigo-600">JOI.A.</span>
+        </p>
+      </footer>
+
       <style>{`
         @keyframes shake {
           0%, 100% { transform: translateX(0); }

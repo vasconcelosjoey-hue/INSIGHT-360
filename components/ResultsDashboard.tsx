@@ -196,7 +196,7 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ results, use
               <div key={dim.dimensionId} className="group">
                 <div className="flex justify-between items-center mb-1">
                   <span className="text-sm font-bold text-slate-700 group-hover:text-indigo-600 transition-colors">{dim.dimensionName}</span>
-                  <span className={`text-sm font-black ${dim.score >= 70 ? 'text-emerald-600' : dim.score <= 30 ? 'text-rose-600' : 'text-slate-500'}`}>{dim.score}%</span>
+                  <span className={`text-sm font-black ${dim.score >= 70 ? 'text-emerald-600' : dim.score <= 30 ? 'text-rose-700' : 'text-slate-500'}`}>{dim.score}%</span>
                 </div>
                 <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
                    <div 
@@ -336,7 +336,8 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ results, use
         
         <div className="fixed bottom-0 left-0 w-full text-center text-[9px] text-slate-400 p-6 border-t border-slate-100 bg-white">
            Insight360 Diagnostic System • Código {testId} • Relatório Confidencial gerado para {userInfo?.name}.
-           <br />A validade técnica deste documento pode ser consultada através do ID alfanumérico em nosso banco de dados.
+           <br />
+           <span className="font-bold text-slate-500">powered By <span className="text-indigo-600">JOI.A.</span></span> • A validade técnica deste documento pode ser consultada através do ID alfanumérico em nosso banco de dados.
         </div>
       </div>
     </div>

@@ -26,16 +26,16 @@ export const DIMENSIONS: Dimension[] = [
 ];
 
 export const CORPORATE_DIMENSIONS: Dimension[] = [
-  { id: 'engajamento', name: 'Engajamento', description: 'Energia e dedicação ao trabalho.' },
-  { id: 'pertencimento', name: 'Pertencimento', description: 'Sentir-se parte essencial da equipe.' },
-  { id: 'seguranca', name: 'Segurança Psicológica', description: 'Liberdade para errar e opinar.' },
-  { id: 'proposito', name: 'Propósito', description: 'Conexão entre valores pessoais e da empresa.' },
-  { id: 'colaboracao', name: 'Colaboração', description: 'Sinergia e auxílio mútuo entre pares.' },
-  { id: 'burnout', name: 'Risco de Burnout', description: 'Esgotamento físico e mental.' },
-  { id: 'estresse', name: 'Estresse Crônico', description: 'Nível de tensão diária acumulada.' },
-  { id: 'isolamento', name: 'Isolamento', description: 'Sentimento de desconexão social no trabalho.' },
-  { id: 'frustracao', name: 'Frustração', description: 'Sentimento de estagnação ou injustiça.' },
-  { id: 'clima', name: 'Clima Geral', description: 'Percepção da atmosfera organizacional.' },
+  { id: 'engajamento', name: 'Engajamento (Dopamina)', description: 'Nível de motivação e recompensa.' },
+  { id: 'pertencimento', name: 'Pertencimento (Ocitocina)', description: 'Conexão e segurança no grupo.' },
+  { id: 'seguranca', name: 'Segurança (GABA)', description: 'Ausência de medo e ameaça.' },
+  { id: 'proposito', name: 'Propósito (Acetilcolina)', description: 'Foco e significado no trabalho.' },
+  { id: 'colaboracao', name: 'Colaboração (Glutamato)', description: 'Excitabilidade e troca entre pares.' },
+  { id: 'burnout', name: 'Risco de Burnout', description: 'Esgotamento neurofisiológico.' },
+  { id: 'estresse', name: 'Estresse (Cortisol)', description: 'Nível de alerta e pressão crônica.' },
+  { id: 'isolamento', name: 'Isolamento Social', description: 'Desconexão e falta de suporte.' },
+  { id: 'frustracao', name: 'Frustração', description: 'Sentimento de injustiça ou estagnação.' },
+  { id: 'resiliencia', name: 'Resiliência (Endorfina)', description: 'Capacidade de lidar com dor e pressão.' },
 ];
 
 const INDIVIDUAL_QUESTIONS = [
@@ -84,58 +84,58 @@ const INDIVIDUAL_QUESTIONS = [
 ];
 
 const CORPORATE_QUESTIONS = [
-  // Engajamento
-  "Sinto-me energizado e motivado ao iniciar minha jornada de trabalho.",
-  "O tempo passa rápido quando estou focado em minhas tarefas profissionais.",
-  "Sinto que meu trabalho contribui diretamente para o sucesso da organização.",
-  "Falo com entusiasmo sobre a empresa para pessoas de fora.",
-  // Pertencimento
-  "Sinto que meus colegas de equipe realmente se importam comigo como pessoa.",
-  "Minha identidade profissional está fortemente ligada a esta equipe.",
-  "Sinto que sou ouvido e respeitado dentro do meu departamento.",
-  "Vejo-me trabalhando nesta organização pelos próximos anos.",
-  // Segurança
-  "Sinto-me confortável em admitir um erro sem medo de punição severa.",
-  "Posso discordar abertamente de decisões da liderança sem receio.",
-  "A equipe é aberta a novas ideias, mesmo as mais inusitadas.",
-  "Sinto que posso ser eu mesmo no ambiente de trabalho.",
-  // Propósito
-  "Os valores da empresa estão alinhados com o que eu acredito pessoalmente.",
-  "Entendo perfeitamente como meu papel ajuda a realizar a missão da empresa.",
-  "Sinto orgulho do impacto que nosso produto/serviço causa na sociedade.",
-  "Trabalho por algo maior do que apenas o salário no final do mês.",
-  // Colaboração
-  "Meus colegas compartilham conhecimentos livremente uns com os outros.",
-  "Em momentos de crise, a equipe se une para resolver o problema rapidamente.",
-  "Confio plenamente na qualidade do trabalho entregue pelos meus pares.",
-  "A cooperação aqui é mais valorizada do que a competição interna.",
-  // Burnout (Invertida)
-  "Ao final do dia, sinto-me exausto e sem energia para minha vida pessoal.",
-  "Tenho tido dificuldades para dormir pensando em problemas do trabalho.",
-  "Sinto que minhas tarefas são esmagadoras e nunca terminam.",
-  "Minha paciência com colegas e clientes tem diminuído drasticamente.",
-  // Estresse (Invertida)
-  "Sinto uma pressão constante para entregar resultados acima do humano.",
-  "O ambiente de trabalho é tenso e focado apenas em cobranças.",
-  "Sinto dores físicas (cabeça, costas) relacionadas ao estresse laboral.",
-  "Tenho dificuldade em me desconectar do trabalho nos fins de semana.",
-  // Isolamento (Invertida)
-  "Sinto que sou 'apenas um número' dentro desta grande engrenagem.",
-  "Frequentemente almoço ou passo os intervalos sozinho por falta de afinidade.",
-  "Faltam espaços de interação genuína entre as pessoas da empresa.",
-  "Sinto que ninguém realmente conhece minhas habilidades reais aqui.",
-  // Frustração (Invertida)
-  "Acredito que pessoas menos qualificadas são promovidas antes de mim.",
-  "As ferramentas de trabalho fornecidas são inadequadas para minhas tarefas.",
-  "Sinto que minha carreira está estagnada nesta organização.",
-  "A comunicação interna é falha e recebo informações importantes por último.",
-  // Clima
-  "Eu recomendaria esta empresa para um amigo próximo trabalhar.",
-  "A liderança demonstra empatia e se preocupa com a saúde da equipe.",
-  "O clima organizacional favorece a inovação e o bem-estar.",
+  // Engajamento (Dopamina)
   "Sinto que sou recompensado de forma justa pelo meu esforço.",
-  "Há um equilíbrio saudável entre vida pessoal e profissional aqui.",
-  "Confio nas decisões estratégicas tomadas pela diretoria da empresa."
+  "Tenho clareza dos meus objetivos e sinto prazer em alcançá-los.",
+  "O ambiente de trabalho me estimula a buscar novos desafios diariamente.",
+  "Sinto-me motivado a entregar mais do que o esperado pela empresa.",
+  // Pertencimento (Ocitocina)
+  "Sinto que faço parte de um grupo que me apoia e me protege.",
+  "Confio nas intenções dos meus colegas de trabalho.",
+  "Existe um forte senso de comunidade em nosso departamento.",
+  "Sinto que minhas opiniões são valorizadas pela equipe.",
+  // Segurança (GABA)
+  "Sinto-me seguro para expressar minhas ideias sem medo de críticas.",
+  "O ambiente de trabalho é tranquilo e livre de ameaças constantes.",
+  "Sinto que meus erros são vistos como oportunidades de aprendizado.",
+  "Tenho previsibilidade sobre minhas tarefas e responsabilidades.",
+  // Propósito (Acetilcolina)
+  "Meu trabalho tem um significado que vai além do retorno financeiro.",
+  "Sinto que meus valores pessoais estão alinhados com a empresa.",
+  "O que eu faço diariamente contribui para um bem maior.",
+  "Entendo o impacto real do meu trabalho na vida das pessoas.",
+  // Colaboração (Glutamato)
+  "A troca de informações entre os membros da equipe é fluida e intensa.",
+  "Aprendo constantemente com meus pares através da cooperação.",
+  "Sinto que a equipe é um motor de ideias em constante atividade.",
+  "A colaboração aqui é mais importante que a competição individual.",
+  // Burnout
+  "Sinto-me exausto logo ao acordar para mais um dia de trabalho.",
+  "Minha produtividade caiu drasticamente nos últimos meses.",
+  "Tenho dificuldade em me concentrar em tarefas simples.",
+  "Sinto que não tenho mais energia emocional para investir no trabalho.",
+  // Estresse (Cortisol)
+  "Sinto uma pressão constante no peito por causa das cobranças.",
+  "O clima de trabalho me deixa em estado de alerta o tempo todo.",
+  "Tenho tido reações exageradas a pequenos problemas profissionais.",
+  "Sinto que as exigências do cargo superam minha capacidade de entrega.",
+  // Isolamento Social
+  "Sinto que trabalho sozinho, mesmo estando rodeado de pessoas.",
+  "Não sinto conexão emocional com nenhum dos meus colegas.",
+  "Frequentemente me sinto ignorado em decisões que me afetam.",
+  "Faltam momentos de interação genuína na empresa.",
+  // Frustração
+  "Sinto que meu crescimento está bloqueado por questões políticas.",
+  "As decisões da liderança parecem injustas e desmotivadoras.",
+  "Sinto que meus talentos estão sendo desperdiçados nesta posição.",
+  "Raramente recebo feedback construtivo sobre meu desempenho.",
+  // Resiliência (Endorfina)
+  "Consigo manter o foco mesmo em situações de alta pressão.",
+  "Supero crises profissionais com relativa rapidez e equilíbrio.",
+  "Vejo dificuldades como degraus para o meu fortalecimento.",
+  "Tenho ferramentas emocionais para lidar com o estresse diário.",
+  "Sinto orgulho da minha capacidade de adaptação a mudanças.",
+  "Consigo rir de situações difíceis para aliviar a tensão da equipe."
 ];
 
 export const getQuestions = (type: 'individual' | 'corporate'): Question[] => {
@@ -143,7 +143,6 @@ export const getQuestions = (type: 'individual' | 'corporate'): Question[] => {
   const dims = type === 'corporate' ? CORPORATE_DIMENSIONS : DIMENSIONS;
   
   return list.map((text, i) => {
-    const questionsPerDimension = type === 'corporate' ? 4.2 : 2; // Aproximação
     const dimIndex = Math.floor(i / (list.length / dims.length));
     return {
       id: i + 1,

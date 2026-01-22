@@ -12,7 +12,6 @@ const firebaseConfig = {
   appId: "1:705424550512:web:24f23eab01d722b579a2b5"
 };
 
-// Singleton pattern para inicialização do Firebase
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const db = getFirestore(app);
 
@@ -27,7 +26,7 @@ export const saveCompany = async (company: Omit<Company, 'id' | 'createdAt'>) =>
     });
     return docRef.id;
   } catch (error) {
-    console.error("Erro detalhado ao salvar empresa:", error);
+    console.error("Erro ao salvar empresa:", error);
     throw error;
   }
 };
@@ -59,10 +58,15 @@ export const getAllCompanies = async () => {
 
 export const saveTestResult = async (userInfo: UserInfo, results: ProcessedResult[], testId: string) => {
   try {
+    // Salvando com as chaves corretas para evitar undefined
     await addDoc(collection(db, "leads"), {
       testId,
       ...userInfo,
-      results: results.map(r => ({ id: r.dimensionId, name: r.dimensionName, score: r.score })),
+      results: results.map(r => ({ 
+        dimensionId: r.dimensionId, 
+        dimensionName: r.dimensionName, 
+        score: r.score 
+      })),
       createdAt: serverTimestamp(),
       completedAt: new Date().toISOString()
     });
@@ -94,9 +98,11 @@ export const getCompanyAggregate = async (companyId: string) => {
     const dimensionTotals: Record<string, { sum: number, count: number, name: string }> = {};
     leads.forEach((lead: any) => {
       lead.results.forEach((r: any) => {
-        if (!dimensionTotals[r.id]) dimensionTotals[r.id] = { sum: 0, count: 0, name: r.name };
-        dimensionTotals[r.id].sum += r.score;
-        dimensionTotals[r.id].count += 1;
+        const id = r.dimensionId || r.id;
+        const name = r.dimensionName || r.name;
+        if (!dimensionTotals[id]) dimensionTotals[id] = { sum: 0, count: 0, name: name };
+        dimensionTotals[id].sum += r.score;
+        dimensionTotals[id].count += 1;
       });
     });
 

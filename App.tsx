@@ -9,7 +9,8 @@ import { Disclaimer } from './components/Disclaimer';
 import { WelcomeWizard } from './components/WelcomeWizard';
 import { LeadCapture } from './components/LeadCapture';
 import { saveTestResult } from './services/firebase';
-import { Brain, ArrowRight, Layers, Save } from 'lucide-react';
+import { extractScoresFromText } from './services/geminiService';
+import { Brain, ArrowRight, Layers, Save, FileText, ClipboardList, Loader2, AlertCircle } from 'lucide-react';
 
 const App: React.FC = () => {
   const [quizState, setQuizState] = useState<QuizState>('lead-capture');
@@ -23,6 +24,9 @@ const App: React.FC = () => {
   const [isValidatingCompleteness, setIsValidatingCompleteness] = useState(false);
   
   const [manualScores, setManualScores] = useState<Record<string, number>>({});
+  const [importText, setImportText] = useState('');
+  const [isExtracting, setIsExtracting] = useState(false);
+  const [extractError, setExtractError] = useState('');
 
   const generateTestId = () => {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -53,12 +57,28 @@ const App: React.FC = () => {
     setIsValidatingCompleteness(false);
   };
 
+  const handleImportRequest = () => {
+    setQuizState('import-text');
+  };
+
+  const handleImportSubmit = async () => {
+    if (!importText.trim()) return;
+    setIsExtracting(true);
+    setExtractError('');
+    try {
+      const extractedResults = await extractScoresFromText(importText);
+      const newId = generateTestId();
+      setTestId(newId);
+      setResults(extractedResults);
+      setQuizState('results');
+    } catch (err) {
+      setExtractError('Não conseguimos identificar os scores no texto. Tente colar o diagnóstico completo ou use a entrada manual.');
+    } finally {
+      setIsExtracting(false);
+    }
+  };
+
   const handleDirectManualEntry = () => {
-    setUserInfo({
-      name: 'Visitante (Manual)',
-      email: '',
-      whatsapp: ''
-    });
     const initial: Record<string, number> = {};
     DIMENSIONS.forEach(d => initial[d.id] = 50);
     setManualScores(initial);
@@ -202,6 +222,7 @@ const App: React.FC = () => {
       <main className="flex flex-col items-center justify-start flex-grow w-full relative">
         {quizState === 'disclaimer' && <Disclaimer onAccept={handleDisclaimerAccept} />}
         {quizState === 'welcome' && <WelcomeWizard onComplete={handleWelcomeComplete} />}
+        
         {quizState === 'intro' && (
           <div className="min-h-screen w-full flex items-center justify-center bg-[#0f172a] p-4 relative overflow-hidden">
              <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-600/10 rounded-full blur-[100px] pointer-events-none" />
@@ -215,18 +236,80 @@ const App: React.FC = () => {
               </h1>
               <p className="text-base md:text-xl text-slate-300 mb-8 md:mb-12 leading-relaxed max-w-2xl mx-auto font-light px-2">
                 Olá, <span className="text-indigo-300 font-medium">{userInfo?.name.split(' ')[0]}</span>. 
-                Prepare-se para analisar suas 21 dimensões psicológicas e descobrir onde seus traços convergem.
+                Escolha como deseja prosseguir com seu diagnóstico.
               </p>
               <div className="flex flex-col items-center gap-4 w-full">
                 <button 
                   onClick={handleStart}
                   className="group relative inline-flex items-center justify-center px-8 md:px-12 py-4 md:py-5 text-lg font-semibold text-white transition-all duration-300 bg-gradient-to-r from-indigo-600 to-violet-600 rounded-2xl shadow-xl shadow-indigo-500/40 hover:shadow-indigo-500/60 hover:-translate-y-1 hover:scale-105 w-full md:w-auto"
                 >
-                  Iniciar Análise (42 Questões)
+                  Fazer Novo Teste (42 Questões)
                   <ArrowRight className="ml-3 w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </button>
+                
+                <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+                  <button 
+                    onClick={handleImportRequest}
+                    className="flex items-center justify-center gap-2 px-6 py-3 text-slate-300 hover:text-white border border-white/10 hover:bg-white/5 rounded-xl transition-all font-medium text-sm"
+                  >
+                    <FileText className="w-4 h-4" /> Importar Documento Existente
+                  </button>
+                  <button 
+                    onClick={handleDirectManualEntry}
+                    className="flex items-center justify-center gap-2 px-6 py-3 text-slate-300 hover:text-white border border-white/10 hover:bg-white/5 rounded-xl transition-all font-medium text-sm"
+                  >
+                    <ClipboardList className="w-4 h-4" /> Entrada Manual de Scores
+                  </button>
+                </div>
               </div>
-              <p className="mt-8 text-[10px] md:text-xs text-slate-500 uppercase tracking-widest font-medium italic">ANÁLISE PREMIUM ATIVADA</p>
+              <p className="mt-8 text-[10px] md:text-xs text-slate-500 uppercase tracking-widest font-medium italic">Powered by Gemini 3 Pro Elite Analysis</p>
+            </div>
+          </div>
+        )}
+
+        {quizState === 'import-text' && (
+          <div className="min-h-screen w-full flex items-center justify-center bg-[#0f172a] p-4">
+            <div className="max-w-2xl w-full bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-6 md:p-10 shadow-2xl animate-fade-in-up">
+              <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">Importar Diagnóstico</h2>
+              <p className="text-slate-400 text-sm mb-6">Cole o texto do seu diagnóstico anterior. Nossa IA (Gemini 3 Pro) extrairá automaticamente as dimensões para você.</p>
+              
+              <div className="relative mb-6">
+                <textarea 
+                  className="w-full h-64 bg-slate-900/50 border border-slate-700 text-white rounded-2xl p-4 focus:ring-2 focus:ring-indigo-500/50 outline-none text-sm placeholder:text-slate-600 transition-all resize-none font-mono"
+                  placeholder="Cole aqui o texto do seu relatório ou as respostas..."
+                  value={importText}
+                  onChange={(e) => setImportText(e.target.value)}
+                />
+                {isExtracting && (
+                  <div className="absolute inset-0 bg-black/60 backdrop-blur-sm rounded-2xl flex flex-col items-center justify-center gap-4 text-white">
+                    <Loader2 className="w-10 h-10 animate-spin text-indigo-400" />
+                    <span className="font-bold tracking-widest uppercase text-xs">Mapeando Dimensões...</span>
+                  </div>
+                )}
+              </div>
+
+              {extractError && (
+                <div className="bg-rose-500/10 border border-rose-500/20 p-4 rounded-xl flex items-start gap-3 mb-6">
+                  <AlertCircle className="w-5 h-5 text-rose-500 flex-shrink-0 mt-0.5" />
+                  <p className="text-rose-200 text-xs leading-relaxed">{extractError}</p>
+                </div>
+              )}
+
+              <div className="flex flex-col sm:flex-row gap-4">
+                <button 
+                  onClick={() => setQuizState('intro')}
+                  className="px-8 py-4 text-slate-400 font-bold hover:text-white transition-all text-sm"
+                >
+                  Voltar
+                </button>
+                <button 
+                  onClick={handleImportSubmit}
+                  disabled={!importText.trim() || isExtracting}
+                  className="flex-grow flex items-center justify-center gap-3 px-8 py-4 bg-indigo-600 text-white rounded-xl font-bold shadow-xl shadow-indigo-500/20 hover:bg-indigo-700 disabled:opacity-50 transition-all active:scale-95"
+                >
+                  Extrair e Gerar Dashboard
+                </button>
+              </div>
             </div>
           </div>
         )}
@@ -239,7 +322,7 @@ const App: React.FC = () => {
                   <h2 className="text-xl md:text-2xl font-bold text-slate-900 leading-tight">Entrada Manual</h2>
                   <p className="text-sm text-slate-500">Transcreva os resultados do documento.</p>
                 </div>
-                <button onClick={() => setQuizState('lead-capture')} className="text-xs text-slate-400 hover:text-rose-500 transition-colors">Cancelar</button>
+                <button onClick={() => setQuizState('intro')} className="text-xs text-slate-400 hover:text-rose-500 transition-colors">Cancelar</button>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4">
                 {DIMENSIONS.map((dim) => (
@@ -268,7 +351,7 @@ const App: React.FC = () => {
               </div>
               <div className="mt-8 pt-6 border-t border-slate-100 flex justify-center md:justify-end">
                  <button onClick={handleManualSubmit} className="flex items-center justify-center gap-2 w-full md:w-auto px-8 py-4 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-500/20 font-bold">
-                   <Save className="w-5 h-5" /> Gerar Relatório Premium
+                   <Save className="w-5 h-5" /> Visualizar Dashboard
                  </button>
               </div>
             </div>

@@ -10,18 +10,20 @@ export const generatePsychologicalAnalysis = async (
   try {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     
-    // Formatação ultra-simplificada para evitar sobrecarga de tokens
-    const dataTable = results.map(r => `${r.dimensionName}: ${r.score}%`).join(' | ');
+    const dataSummary = results.map(r => `${r.dimensionName}: ${r.score}%`).join('\n');
 
     const systemInstruction = isCorporate 
-      ? "Você é um Consultor de RH Sênior. Analise os scores da equipe e forneça um parecer técnico focado em saúde organizacional e produtividade."
-      : "Você é um Psicólogo Organizacional. Analise o perfil individual e forneça um parecer técnico focado em desenvolvimento e carreira.";
+      ? "Você é um Consultor Sênior de Saúde Organizacional. Sua tarefa é fornecer um diagnóstico preciso e recomendações estratégicas baseadas em dados psicométricos de grupo."
+      : "Você é um Psicólogo Organizacional Especialista. Forneça uma análise técnica do perfil individual, destacando talentos e pontos de atenção.";
 
     const prompt = `
-      DADOS: ${dataTable}
-      PERGUNTA DO CONSULTOR: ${customPrompt || "Gere uma síntese estratégica dos resultados."}
+      RESULTADOS DO QUESTIONÁRIO:
+      ${dataSummary}
       
-      INSTRUÇÃO: Responda em Português, seja direto, técnico e profissional. Limite-se a 300 palavras.
+      SOLICITAÇÃO ESPECÍFICA:
+      ${customPrompt || "Gere um parecer técnico completo e sugestões de desenvolvimento."}
+      
+      IMPORTANTE: Responda em Português. Seja profissional, profundo e direto.
     `;
 
     const response = await ai.models.generateContent({
@@ -29,14 +31,14 @@ export const generatePsychologicalAnalysis = async (
       contents: prompt,
       config: { 
         systemInstruction,
-        temperature: 0.5,
-        thinkingConfig: { thinkingBudget: 1000 } // Orçamento reduzido para maior velocidade
+        temperature: 0.6,
+        thinkingConfig: { thinkingBudget: 1000 }
       }
     });
 
-    return response.text || "Análise concluída com sucesso.";
+    return response.text || "Análise gerada com sucesso.";
   } catch (error: any) {
-    console.error("Gemini Error:", error);
-    return "Ocorreu um erro na conexão com a IA. Por favor, tente enviar sua pergunta novamente.";
+    console.error("Erro na IA:", error);
+    return "O sistema de IA está temporariamente indisponível. Por favor, tente enviar sua pergunta novamente.";
   }
 };

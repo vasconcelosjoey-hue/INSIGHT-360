@@ -37,24 +37,29 @@ const App: React.FC = () => {
 
   const handleLeadSubmit = (info: UserInfo) => {
     setUserInfo(info);
-    if (info.testType === 'corporate') {
+    // Fluxo agora sempre vai para as conformidades primeiro
+    setQuizState('disclaimer');
+  };
+
+  const handleDisclaimerAccept = () => {
+    if (userInfo?.testType === 'corporate') {
       setLoadingCompanies(true);
+      setQuizState('company-selection');
       getActiveCompanies().then(list => {
         setCompanies(list);
         setLoadingCompanies(false);
-        setQuizState('company-selection');
       });
     } else {
       const questions = getQuestions('individual');
       setCurrentQuestions(questions);
-      setQuizState('disclaimer');
+      setQuizState('welcome');
     }
   };
 
   const selectCompany = (company: Company) => {
     setUserInfo(prev => prev ? ({ ...prev, companyId: company.id, companyName: company.name, cnpj: company.cnpj }) : null);
     setCurrentQuestions(getQuestions('corporate'));
-    setQuizState('disclaimer');
+    setQuizState('welcome');
   };
 
   const processResults = async (finalAnswers: Record<number, number>) => {
@@ -79,8 +84,10 @@ const App: React.FC = () => {
       <main className="flex-grow w-full h-full overflow-hidden">
         {quizState === 'lead-capture' && <LeadCapture onComplete={handleLeadSubmit} onAdminLogin={() => { setIsAdmin(true); setQuizState('admin'); }} />}
         
+        {quizState === 'disclaimer' && <Disclaimer onAccept={handleDisclaimerAccept} />}
+
         {quizState === 'company-selection' && (
-          <div className="min-h-screen flex items-center justify-center bg-[#070b14] p-6">
+          <div className="min-h-screen flex items-center justify-center bg-[#070b14] p-6 animate-fade-in">
             <div className="w-full max-w-md bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[2.5rem] p-10">
               <div className="flex items-center gap-3 mb-8">
                 <Building2 className="w-10 h-10 text-orange-500" />
@@ -94,7 +101,7 @@ const App: React.FC = () => {
               ) : companies.length === 0 ? (
                 <div className="text-center py-10">
                   <p className="text-slate-400 text-sm">Nenhuma empresa com questionário ativo no momento.</p>
-                  <button onClick={() => setQuizState('lead-capture')} className="text-orange-500 font-black uppercase text-[10px] mt-4">Voltar</button>
+                  <button onClick={() => setQuizState('lead-capture')} className="text-orange-500 font-black uppercase text-[10px] mt-4">Voltar ao Início</button>
                 </div>
               ) : (
                 <div className="space-y-3 max-h-[40vh] overflow-y-auto pr-2 custom-scrollbar">
@@ -102,7 +109,7 @@ const App: React.FC = () => {
                     <button key={c.id} onClick={() => selectCompany(c)} className="w-full bg-white/5 hover:bg-white/10 border border-white/10 p-5 rounded-2xl flex items-center justify-between group transition-all">
                       <div className="text-left">
                         <p className="text-white font-black uppercase text-xs tracking-widest">{c.name}</p>
-                        <p className="text-slate-500 text-[8px] font-bold">VÁLIDO ATÉ {new Date(c.endDate).toLocaleDateString()}</p>
+                        <p className="text-slate-500 text-[8px] font-bold">DISPONÍVEL ATÉ {new Date(c.endDate).toLocaleDateString()}</p>
                       </div>
                       <ChevronRight className="w-5 h-5 text-orange-500 group-hover:translate-x-1 transition-transform" />
                     </button>
@@ -113,7 +120,6 @@ const App: React.FC = () => {
           </div>
         )}
 
-        {quizState === 'disclaimer' && <Disclaimer onAccept={() => setQuizState('welcome')} />}
         {quizState === 'welcome' && <WelcomeWizard onComplete={() => setQuizState('intro')} />}
         {quizState === 'thank-you' && <ThankYou onContinue={() => {}} isFinal={false} />}
         {quizState === 'final-screen' && <ThankYou onContinue={() => window.location.reload()} isFinal={true} />}

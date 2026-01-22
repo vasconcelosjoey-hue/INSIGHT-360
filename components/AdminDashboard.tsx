@@ -4,7 +4,6 @@ import { getAllLeads, getAllCompanies, saveCompany, getCompanyAggregate } from '
 import { Layers, Search, Mail, Phone, Calendar, ArrowLeft, ExternalLink, RefreshCcw, Loader2, FileText, Users, UserCircle, Building2, Plus, X, ShieldCheck, CheckCircle2 } from 'lucide-react';
 import { ProcessedResult, UserInfo, Company } from '../types';
 
-// Fix: Added missing interface definition for AdminDashboard component props
 interface AdminDashboardProps {
   onBack: () => void;
   onViewLead: (userInfo: any, results: ProcessedResult[], testId: string) => void;
@@ -33,8 +32,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack, onViewLe
     setLoading(true);
     try {
       const [lData, cData] = await Promise.all([getAllLeads(), getAllCompanies()]);
-      setLeads(lData);
-      setCompanies(cData);
+      setLeads(lData || []);
+      setCompanies(cData || []);
     } catch (e) {
       console.error("Erro ao carregar dados:", e);
     } finally {
@@ -63,9 +62,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack, onViewLe
       setNewCompany({ name: '', cnpj: '', startDay: '', startMonth: '', endDay: '', endMonth: '' });
       setShowAddCompany(false);
       await fetchData();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Erro ao salvar empresa:", error);
-      alert("Houve um erro ao salvar o registro. Verifique a conexão.");
+      if (error?.message?.includes('permission')) {
+        alert("Erro de Permissão: Certifique-se de que as Regras do Firestore estão configuradas como 'allow read, write: if true;' no console do Firebase.");
+      } else {
+        alert("Houve um erro ao salvar o registro. Verifique o console do navegador para detalhes.");
+      }
     } finally {
       setSaving(false);
     }
@@ -84,7 +87,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack, onViewLe
     }
   };
 
-  const filteredLeads = leads.filter(l => 
+  const filteredLeads = (leads || []).filter(l => 
     l.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     l.companyName?.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -94,15 +97,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack, onViewLe
       <header className="bg-slate-900/50 border-b border-white/5 p-6 sticky top-0 z-50 backdrop-blur-3xl">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="flex items-center gap-4">
-            <button onClick={onBack} className="p-3 bg-white/5 hover:bg-white/10 rounded-xl border border-white/5"><ArrowLeft className="w-5 h-5 text-slate-400" /></button>
+            <button onClick={onBack} className="p-3 bg-white/5 hover:bg-white/10 rounded-xl border border-white/5 transition-colors"><ArrowLeft className="w-5 h-5 text-slate-400" /></button>
             <div className="flex items-center gap-3">
               <Layers className="w-8 h-8 text-indigo-500" />
               <h1 className="text-xl font-black uppercase tracking-widest text-white leading-none">Insight<span className="text-indigo-500">360</span></h1>
             </div>
           </div>
           <div className="flex gap-2 bg-black/40 p-1 rounded-xl border border-white/5">
-            <button onClick={() => setActiveTab('leads')} className={`px-6 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'leads' ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-500'}`}>Entrevistados</button>
-            <button onClick={() => setActiveTab('companies')} className={`px-6 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'companies' ? 'bg-orange-600 text-white shadow-lg' : 'text-slate-500'}`}>Empresas</button>
+            <button onClick={() => setActiveTab('leads')} className={`px-6 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'leads' ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}>Entrevistados</button>
+            <button onClick={() => setActiveTab('companies')} className={`px-6 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'companies' ? 'bg-orange-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}>Empresas</button>
           </div>
         </div>
       </header>
@@ -115,46 +118,57 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack, onViewLe
           </div>
         ) : activeTab === 'leads' ? (
           <>
-            <div className="relative mb-8 max-w-xl">
-              <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-              <input type="text" placeholder="Filtrar por nome ou empresa..." className="w-full bg-black/40 border border-white/10 text-white rounded-2xl py-4 pl-14 pr-4 outline-none text-sm" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-10 gap-6 animate-fade-in">
+              <h2 className="text-4xl font-black text-white leading-tight">Diagnósticos <span className="text-indigo-500">Individuais</span></h2>
+              <div className="relative w-full max-w-sm">
+                <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                <input type="text" placeholder="Filtrar por nome ou empresa..." className="w-full bg-black/40 border border-white/10 text-white rounded-2xl py-4 pl-14 pr-4 outline-none text-xs transition-all focus:border-indigo-500/50" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+              </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in">
               {filteredLeads.map((lead) => (
-                <div key={lead.id} className="bg-slate-900 border border-white/5 rounded-[2rem] p-8 hover:bg-slate-800 transition-all flex flex-col">
-                  <div className="flex justify-between items-start mb-6">
-                    <div className={`p-3 rounded-xl ${lead.testType === 'corporate' ? 'bg-orange-500/10' : 'bg-indigo-500/10'}`}>
+                <div key={lead.id} className="bg-slate-900 border border-white/5 rounded-[2rem] p-8 hover:bg-slate-800 transition-all flex flex-col group relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/5 blur-3xl rounded-full -mr-12 -mt-12 group-hover:bg-indigo-500/10 transition-all" />
+                  <div className="flex justify-between items-start mb-6 relative z-10">
+                    <div className={`p-3 rounded-xl transition-colors ${lead.testType === 'corporate' ? 'bg-orange-500/10 group-hover:bg-orange-500/20' : 'bg-indigo-500/10 group-hover:bg-indigo-500/20'}`}>
                       {lead.testType === 'corporate' ? <Building2 className="w-6 h-6 text-orange-400" /> : <UserCircle className="w-6 h-6 text-indigo-400" />}
                     </div>
-                    <button onClick={() => onViewLead(lead, lead.results, lead.testId)} className="p-3 bg-white text-slate-900 rounded-xl font-black uppercase tracking-widest text-[9px] shadow-xl flex items-center gap-2">Resultados <ExternalLink className="w-3 h-3" /></button>
+                    <button onClick={() => onViewLead(lead, lead.results, lead.testId)} className="p-3 bg-white text-slate-900 rounded-xl font-black uppercase tracking-widest text-[9px] shadow-xl flex items-center gap-2 hover:bg-indigo-50 transition-all active:scale-95">Resultados <ExternalLink className="w-3 h-3" /></button>
                   </div>
-                  <h3 className="text-lg font-bold text-white mb-1 truncate">{lead.name}</h3>
-                  <p className={`text-[10px] font-black uppercase tracking-widest mb-4 ${lead.testType === 'corporate' ? 'text-orange-500' : 'text-indigo-500'}`}>{lead.testType === 'corporate' ? lead.companyName : 'Individual'}</p>
-                  <div className="space-y-2 text-[11px] text-slate-400">
-                    <div className="flex items-center gap-2"><Mail className="w-3 h-3" /> {lead.email}</div>
+                  <h3 className="text-lg font-bold text-white mb-1 truncate relative z-10">{lead.name}</h3>
+                  <p className={`text-[10px] font-black uppercase tracking-widest mb-4 relative z-10 ${lead.testType === 'corporate' ? 'text-orange-500' : 'text-indigo-500'}`}>{lead.testType === 'corporate' ? lead.companyName : 'Individual'}</p>
+                  <div className="space-y-2 text-[11px] text-slate-400 relative z-10">
+                    <div className="flex items-center gap-2"><Mail className="w-3 h-3" /> {lead.email || 'Não informado'}</div>
                     <div className="flex items-center gap-2"><Phone className="w-3 h-3" /> {lead.whatsapp}</div>
-                    <div className="flex items-center gap-2"><Calendar className="w-3 h-3" /> {new Date(lead.completedAt).toLocaleDateString()}</div>
+                    <div className="flex items-center gap-2"><Calendar className="w-3 h-3" /> {new Date(lead.completedAt || lead.createdAt?.toDate() || Date.now()).toLocaleDateString()}</div>
                   </div>
                 </div>
               ))}
+              {filteredLeads.length === 0 && (
+                <div className="col-span-full py-20 text-center bg-white/5 rounded-[2rem] border border-dashed border-white/10">
+                   <p className="text-slate-500 font-bold text-sm uppercase tracking-widest">Nenhum registro encontrado.</p>
+                </div>
+              )}
             </div>
           </>
         ) : (
           <>
-            <div className="flex justify-between items-end mb-10">
-              <h2 className="text-4xl font-black text-white">Empresas <span className="text-orange-500">VitalPulse</span></h2>
-              <button onClick={() => setShowAddCompany(true)} className="bg-orange-600 hover:bg-orange-500 text-white px-6 py-3 rounded-xl font-black uppercase tracking-widest text-xs flex items-center gap-2 shadow-xl shadow-orange-900/20"><Plus className="w-4 h-4" /> Cadastrar Empresa</button>
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-10 gap-6 animate-fade-in">
+              <h2 className="text-4xl font-black text-white leading-tight">Empresas <span className="text-orange-500">VitalPulse</span></h2>
+              <button onClick={() => setShowAddCompany(true)} className="bg-orange-600 hover:bg-orange-500 text-white px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-xs flex items-center gap-2 shadow-xl shadow-orange-900/20 transition-all active:scale-95"><Plus className="w-4 h-4" /> Cadastrar Empresa</button>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in">
               {companies.map((c) => (
-                <div key={c.id} className="bg-slate-900 border border-white/5 rounded-[2rem] p-8">
-                  <div className="flex justify-between items-start mb-6">
-                    <div className="p-3 bg-orange-500/10 rounded-xl"><Building2 className="w-6 h-6 text-orange-400" /></div>
-                    <button onClick={() => handleViewCompanyResults(c)} className="p-3 bg-orange-600 text-white rounded-xl font-black uppercase tracking-widest text-[9px] shadow-xl flex items-center gap-2">Radar Coletivo <CheckCircle2 className="w-3 h-3" /></button>
+                <div key={c.id} className="bg-slate-900 border border-white/5 rounded-[2rem] p-8 group hover:bg-slate-800 transition-all relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-24 h-24 bg-orange-500/5 blur-3xl rounded-full -mr-12 -mt-12 group-hover:bg-orange-500/10 transition-all" />
+                  <div className="flex justify-between items-start mb-6 relative z-10">
+                    <div className="p-3 bg-orange-500/10 group-hover:bg-orange-500/20 rounded-xl transition-colors"><Building2 className="w-6 h-6 text-orange-400" /></div>
+                    <button onClick={() => handleViewCompanyResults(c)} className="p-3 bg-orange-600 text-white rounded-xl font-black uppercase tracking-widest text-[9px] shadow-xl flex items-center gap-2 hover:bg-orange-500 transition-all active:scale-95">Radar Coletivo <CheckCircle2 className="w-3 h-3" /></button>
                   </div>
-                  <h3 className="text-xl font-black text-white mb-1">{c.name}</h3>
-                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-6">CNPJ: {c.cnpj}</p>
-                  <div className="bg-black/40 rounded-xl p-4 border border-white/5">
+                  <h3 className="text-xl font-black text-white mb-1 relative z-10">{c.name}</h3>
+                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-6 relative z-10">CNPJ: {c.cnpj}</p>
+                  <div className="bg-black/40 rounded-xl p-4 border border-white/5 group-hover:border-white/10 transition-all relative z-10">
                     <p className="text-[9px] font-black text-orange-400 uppercase tracking-widest mb-2">Janela de Resposta</p>
                     <div className="flex justify-between items-center text-xs font-mono">
                       <span className="text-white">{new Date(c.startDate).toLocaleDateString()}</span>
@@ -164,6 +178,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack, onViewLe
                   </div>
                 </div>
               ))}
+              {companies.length === 0 && (
+                <div className="col-span-full py-20 text-center bg-white/5 rounded-[2rem] border border-dashed border-white/10">
+                   <p className="text-slate-500 font-bold text-sm uppercase tracking-widest">Nenhuma empresa cadastrada.</p>
+                </div>
+              )}
             </div>
           </>
         )}
@@ -198,7 +217,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack, onViewLe
                 <input 
                   type="text" 
                   placeholder="00.000.000/0001-00" 
-                  className="w-full bg-black/40 border border-white/10 text-white rounded-2xl py-5 px-6 outline-none text-sm" 
+                  className="w-full bg-black/40 border border-white/10 text-white rounded-2xl py-5 px-6 outline-none text-sm transition-all focus:border-orange-500/50" 
                   value={newCompany.cnpj} 
                   onChange={(e) => setNewCompany({...newCompany, cnpj: e.target.value})} 
                 />
@@ -208,15 +227,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack, onViewLe
                 <div className="space-y-2">
                   <label className="text-[9px] font-black text-orange-400 uppercase tracking-[0.2em] ml-1 block">Início (Dia/Mês)</label>
                   <div className="flex gap-2">
-                    <input type="number" required min="1" max="31" placeholder="Dia" className="w-full bg-black/40 border border-white/10 text-white rounded-xl py-4 px-4 outline-none text-center text-sm" value={newCompany.startDay} onChange={(e) => setNewCompany({...newCompany, startDay: e.target.value})} />
-                    <input type="number" required min="1" max="12" placeholder="Mês" className="w-full bg-black/40 border border-white/10 text-white rounded-xl py-4 px-4 outline-none text-center text-sm" value={newCompany.startMonth} onChange={(e) => setNewCompany({...newCompany, startMonth: e.target.value})} />
+                    <input type="number" required min="1" max="31" placeholder="Dia" className="w-full bg-black/40 border border-white/10 text-white rounded-xl py-4 px-4 outline-none text-center text-sm transition-all focus:border-orange-500/50" value={newCompany.startDay} onChange={(e) => setNewCompany({...newCompany, startDay: e.target.value})} />
+                    <input type="number" required min="1" max="12" placeholder="Mês" className="w-full bg-black/40 border border-white/10 text-white rounded-xl py-4 px-4 outline-none text-center text-sm transition-all focus:border-orange-500/50" value={newCompany.startMonth} onChange={(e) => setNewCompany({...newCompany, startMonth: e.target.value})} />
                   </div>
                 </div>
                 <div className="space-y-2">
                   <label className="text-[9px] font-black text-orange-400 uppercase tracking-[0.2em] ml-1 block">Fim (Dia/Mês)</label>
                   <div className="flex gap-2">
-                    <input type="number" required min="1" max="31" placeholder="Dia" className="w-full bg-black/40 border border-white/10 text-white rounded-xl py-4 px-4 outline-none text-center text-sm" value={newCompany.endDay} onChange={(e) => setNewCompany({...newCompany, endDay: e.target.value})} />
-                    <input type="number" required min="1" max="12" placeholder="Mês" className="w-full bg-black/40 border border-white/10 text-white rounded-xl py-4 px-4 outline-none text-center text-sm" value={newCompany.endMonth} onChange={(e) => setNewCompany({...newCompany, endMonth: e.target.value})} />
+                    <input type="number" required min="1" max="31" placeholder="Dia" className="w-full bg-black/40 border border-white/10 text-white rounded-xl py-4 px-4 outline-none text-center text-sm transition-all focus:border-orange-500/50" value={newCompany.endDay} onChange={(e) => setNewCompany({...newCompany, endDay: e.target.value})} />
+                    <input type="number" required min="1" max="12" placeholder="Mês" className="w-full bg-black/40 border border-white/10 text-white rounded-xl py-4 px-4 outline-none text-center text-sm transition-all focus:border-orange-500/50" value={newCompany.endMonth} onChange={(e) => setNewCompany({...newCompany, endMonth: e.target.value})} />
                   </div>
                 </div>
               </div>
@@ -228,7 +247,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack, onViewLe
               <button 
                 type="submit" 
                 disabled={saving}
-                className="w-full py-5 bg-orange-600 text-white rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl shadow-orange-900/40 hover:bg-orange-500 transition-all flex items-center justify-center gap-3 disabled:opacity-50"
+                className="w-full py-5 bg-orange-600 text-white rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl shadow-orange-900/40 hover:bg-orange-500 transition-all flex items-center justify-center gap-3 disabled:opacity-50 active:scale-95"
               >
                 {saving ? <Loader2 className="animate-spin w-5 h-5" /> : 'Salvar Registro'}
               </button>

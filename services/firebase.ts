@@ -18,27 +18,42 @@ const db = getFirestore(app);
 export { db };
 
 export const saveCompany = async (company: Omit<Company, 'id' | 'createdAt'>) => {
-  const docRef = await addDoc(collection(db, "companies"), {
-    ...company,
-    name: company.name.toUpperCase(),
-    createdAt: serverTimestamp()
-  });
-  return docRef.id;
+  try {
+    const docRef = await addDoc(collection(db, "companies"), {
+      ...company,
+      name: company.name.toUpperCase(),
+      createdAt: serverTimestamp()
+    });
+    return docRef.id;
+  } catch (error) {
+    console.error("Erro detalhado ao salvar empresa:", error);
+    throw error;
+  }
 };
 
 export const getActiveCompanies = async () => {
-  const now = new Date().toISOString().split('T')[0];
-  const q = query(collection(db, "companies"), orderBy("name", "asc"));
-  const snapshot = await getDocs(q);
-  return snapshot.docs
-    .map(doc => ({ id: doc.id, ...doc.data() } as Company))
-    .filter(c => now >= c.startDate && now <= c.endDate);
+  try {
+    const now = new Date().toISOString().split('T')[0];
+    const q = query(collection(db, "companies"), orderBy("name", "asc"));
+    const snapshot = await getDocs(q);
+    return snapshot.docs
+      .map(doc => ({ id: doc.id, ...doc.data() } as Company))
+      .filter(c => now >= c.startDate && now <= c.endDate);
+  } catch (error) {
+    console.error("Erro ao buscar empresas ativas:", error);
+    return [];
+  }
 };
 
 export const getAllCompanies = async () => {
-  const q = query(collection(db, "companies"), orderBy("createdAt", "desc"));
-  const snapshot = await getDocs(q);
-  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Company));
+  try {
+    const q = query(collection(db, "companies"), orderBy("createdAt", "desc"));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Company));
+  } catch (error) {
+    console.error("Erro ao carregar todas as empresas:", error);
+    return [];
+  }
 };
 
 export const saveTestResult = async (userInfo: UserInfo, results: ProcessedResult[], testId: string) => {
@@ -52,36 +67,46 @@ export const saveTestResult = async (userInfo: UserInfo, results: ProcessedResul
     });
     return true;
   } catch (e) {
-    console.error("Save Error:", e);
+    console.error("Save Test Result Error:", e);
     return false;
   }
 };
 
 export const getAllLeads = async () => {
-  const q = query(collection(db, "leads"), orderBy("createdAt", "desc"));
-  const snapshot = await getDocs(q);
-  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  try {
+    const q = query(collection(db, "leads"), orderBy("createdAt", "desc"));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  } catch (error) {
+    console.error("Erro ao buscar leads:", error);
+    return [];
+  }
 };
 
 export const getCompanyAggregate = async (companyId: string) => {
-  const q = query(collection(db, "leads"), where("companyId", "==", companyId));
-  const snapshot = await getDocs(q);
-  const leads = snapshot.docs.map(d => d.data());
-  if (leads.length === 0) return null;
+  try {
+    const q = query(collection(db, "leads"), where("companyId", "==", companyId));
+    const snapshot = await getDocs(q);
+    const leads = snapshot.docs.map(d => d.data());
+    if (leads.length === 0) return null;
 
-  const dimensionTotals: Record<string, { sum: number, count: number, name: string }> = {};
-  leads.forEach((lead: any) => {
-    lead.results.forEach((r: any) => {
-      if (!dimensionTotals[r.id]) dimensionTotals[r.id] = { sum: 0, count: 0, name: r.name };
-      dimensionTotals[r.id].sum += r.score;
-      dimensionTotals[r.id].count += 1;
+    const dimensionTotals: Record<string, { sum: number, count: number, name: string }> = {};
+    leads.forEach((lead: any) => {
+      lead.results.forEach((r: any) => {
+        if (!dimensionTotals[r.id]) dimensionTotals[r.id] = { sum: 0, count: 0, name: r.name };
+        dimensionTotals[r.id].sum += r.score;
+        dimensionTotals[r.id].count += 1;
+      });
     });
-  });
 
-  return Object.keys(dimensionTotals).map(id => ({
-    dimensionId: id,
-    dimensionName: dimensionTotals[id].name,
-    score: Math.round(dimensionTotals[id].sum / dimensionTotals[id].count),
-    description: ''
-  }));
+    return Object.keys(dimensionTotals).map(id => ({
+      dimensionId: id,
+      dimensionName: dimensionTotals[id].name,
+      score: Math.round(dimensionTotals[id].sum / dimensionTotals[id].count),
+      description: ''
+    }));
+  } catch (error) {
+    console.error("Erro ao agregar dados da empresa:", error);
+    return null;
+  }
 };

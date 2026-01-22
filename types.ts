@@ -12,13 +12,13 @@ export interface Question {
 }
 
 export interface UserScore {
-  [dimensionId: string]: number; // Raw sum
+  [dimensionId: string]: number;
 }
 
 export interface ProcessedResult {
   dimensionId: string;
   dimensionName: string;
-  score: number; // 0 to 100
+  score: number;
   description: string;
 }
 
@@ -26,6 +26,7 @@ export interface UserInfo {
   name: string;
   email: string;
   whatsapp: string;
+  testType?: 'individual' | 'corporate';
 }
 
 export type QuizState = 

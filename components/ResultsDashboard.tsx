@@ -1,18 +1,11 @@
 
 import React, { useState, useEffect } from 'react';
 import { 
-  Radar, 
-  RadarChart, 
-  PolarGrid, 
-  PolarAngleAxis, 
-  PolarRadiusAxis, 
-  ResponsiveContainer,
-  RadarProps,
-  Tooltip
+  Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, Tooltip
 } from 'recharts';
 import { ProcessedResult, UserInfo } from '../types';
-import { generatePsychologicalAnalysis } from '../services/geminiService';
-import { Brain, RefreshCcw, Sparkles, Printer, AlertTriangle, CheckCircle, MinusCircle, Mail, Phone, Calendar, Layers, Hash, BadgeCheck, ArrowLeft, Download } from 'lucide-react';
+import { generatePsychologicalAnalysis, askSmartAiAboutCandidate } from '../services/geminiService';
+import { Brain, RefreshCcw, Sparkles, Printer, ShieldCheck, Mail, Phone, Hash, BadgeCheck, ArrowLeft, Download, Send, Loader2, MessageSquareText } from 'lucide-react';
 
 interface ResultsDashboardProps {
   results: ProcessedResult[];
@@ -25,86 +18,77 @@ interface ResultsDashboardProps {
 export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ results, userInfo, testId, onRestart, isAdmin = false }) => {
   const [aiAnalysis, setAiAnalysis] = useState<string>('');
   const [loadingAi, setLoadingAi] = useState<boolean>(false);
+  const [smartQuery, setSmartQuery] = useState('');
+  const [smartResponse, setSmartResponse] = useState('');
+  const [loadingSmart, setLoadingSmart] = useState(false);
 
-  const highScores = results.filter(r => r.score >= 70).sort((a, b) => b.score - a.score);
-  const lowScores = results.filter(r => r.score <= 30).sort((a, b) => a.score - b.score);
+  const isCorporate = userInfo?.testType === 'corporate';
 
   const handleGenerateAnalysis = async () => {
     setLoadingAi(true);
-    const analysis = await generatePsychologicalAnalysis(results);
+    const analysis = await generatePsychologicalAnalysis(results, isCorporate);
     setAiAnalysis(analysis);
     setLoadingAi(false);
   };
 
+  const handleSmartSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!smartQuery.trim()) return;
+    setLoadingSmart(true);
+    const response = await askSmartAiAboutCandidate(results, smartQuery);
+    setSmartResponse(response);
+    setLoadingSmart(false);
+  };
+
   const handlePrint = () => {
-    if (!isAdmin) {
-      alert("Apenas administradores podem exportar o relatório oficial em PDF.");
-      return;
-    }
-    const originalTitle = document.title;
-    const safeName = userInfo?.name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '_') || 'Candidato';
-    const fileName = `Relatorio_Insight360_${safeName}_${testId}`;
-    document.title = fileName;
     window.print();
-    setTimeout(() => {
-      document.title = originalTitle;
-    }, 1000);
   };
 
   return (
-    <div className="max-w-7xl mx-auto w-full p-4 md:p-8">
+    <div className={`max-w-7xl mx-auto w-full p-4 md:p-8 ${isCorporate ? 'theme-corporate' : 'theme-individual'}`}>
       
-      {/* --- DASHBOARD VISUAL --- */}
       <div className="print:hidden">
         {isAdmin && (
-          <button onClick={onRestart} className="mb-6 flex items-center gap-2 text-indigo-600 font-bold text-sm hover:translate-x-[-4px] transition-all bg-indigo-50 px-4 py-2 rounded-lg">
-            <ArrowLeft className="w-4 h-4" /> Voltar para Painel Admin
+          <button onClick={onRestart} className="mb-6 flex items-center gap-2 text-slate-400 font-bold text-xs hover:text-white transition-all bg-white/5 px-4 py-2 rounded-lg">
+            <ArrowLeft className="w-4 h-4" /> Voltar
           </button>
         )}
 
-        <div className="text-center mb-8 md:mb-10 animate-fade-in-up">
-           <div className="inline-block mb-3 md:mb-4">
-             <div className="flex items-center gap-2 bg-indigo-600 px-4 py-2 rounded-full shadow-lg border border-indigo-400">
-               <BadgeCheck className="w-4 h-4 text-white" />
-               <span className="text-xs font-bold text-white uppercase tracking-wider">Relatório Premium</span>
-             </div>
-           </div>
-          <h1 className="text-3xl md:text-5xl font-extrabold text-slate-900 mb-3 tracking-tight">
-            Relatório Insight<span className="text-indigo-600">360</span>
-          </h1>
-          <div className="flex flex-col items-center justify-center gap-2">
-             <p className="text-lg text-slate-600 font-medium">
-               <strong className="text-slate-900">{userInfo?.name}</strong>
-             </p>
-             <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-1 text-xs md:text-sm text-slate-400">
-                <span className="flex items-center gap-1 font-mono"><Hash className="w-3.5 h-3.5" /> ID: <span className="text-indigo-600 font-bold">{testId}</span></span>
-                {userInfo?.email && <span className="flex items-center gap-1"><Mail className="w-3.5 h-3.5" /> {userInfo.email}</span>}
-                {userInfo?.whatsapp && <span className="flex items-center gap-1"><Phone className="w-3.5 h-3.5" /> {userInfo.whatsapp}</span>}
-             </div>
+        <div className="text-center mb-10">
+          <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full shadow-lg border mb-4 ${isCorporate ? 'bg-orange-600 border-orange-400' : 'bg-indigo-600 border-indigo-400'}`}>
+            <BadgeCheck className="w-4 h-4 text-white" />
+            <span className="text-[10px] font-black text-white uppercase tracking-widest">
+              {isCorporate ? 'VitalPulse Corporativo' : 'Individual 360 Premium'}
+            </span>
+          </div>
+          <h1 className="text-3xl md:text-5xl font-black text-slate-900 mb-2">Relatório Insight360</h1>
+          <p className="text-slate-500 font-bold text-lg">{userInfo?.name}</p>
+          <div className="flex flex-wrap justify-center gap-4 text-xs text-slate-400 mt-2 font-mono">
+             <span>ID: {testId}</span>
+             {userInfo?.whatsapp && <span>• {userInfo.whatsapp}</span>}
           </div>
         </div>
 
-        <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 md:gap-8 mb-10">
-          <div className="xl:col-span-7 bg-white rounded-[2rem] shadow-xl border border-slate-100 overflow-hidden flex flex-col animate-slide-in-left">
-            <div className="p-6 md:p-8 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
-              <h3 className="text-lg md:text-xl font-bold text-slate-800 flex items-center gap-2">
-                <Layers className="w-5 h-5 text-indigo-500" />
-                Gráfico de Dimensões 360°
-              </h3>
-            </div>
-            <div className="p-4 flex-grow flex items-center justify-center min-h-[400px]">
-              <ResponsiveContainer width="100%" height={400}>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-10">
+          {/* Chart */}
+          <div className="lg:col-span-7 bg-white rounded-[2.5rem] shadow-2xl border border-slate-100 overflow-hidden p-6 md:p-10">
+            <h3 className="text-xl font-black text-slate-800 mb-6 flex items-center gap-2">
+              <Brain className={`w-6 h-6 ${isCorporate ? 'text-orange-500' : 'text-indigo-500'}`} />
+              Gráfico Radar
+            </h3>
+            <div className="h-[400px]">
+              <ResponsiveContainer width="100%" height="100%">
                 <RadarChart cx="50%" cy="50%" outerRadius="80%" data={results}>
-                  <PolarGrid stroke="#cbd5e1" />
-                  <PolarAngleAxis dataKey="dimensionName" tick={{ fill: '#64748b', fontSize: 10, fontWeight: 600 }} />
-                  <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
+                  <PolarGrid stroke="#e2e8f0" />
+                  <PolarAngleAxis dataKey="dimensionName" tick={{ fill: '#64748b', fontSize: 10, fontWeight: 700 }} />
+                  <PolarRadiusAxis domain={[0, 100]} tick={false} axisLine={false} />
                   <Radar
                     name="Perfil"
                     dataKey="score"
-                    stroke="#4f46e5"
+                    stroke={isCorporate ? '#ea580c' : '#4f46e5'}
                     strokeWidth={3}
-                    fill="#6366f1"
-                    fillOpacity={0.5}
+                    fill={isCorporate ? '#f97316' : '#6366f1'}
+                    fillOpacity={0.4}
                   />
                   <Tooltip />
                 </RadarChart>
@@ -112,133 +96,137 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ results, use
             </div>
           </div>
 
-          <div className="xl:col-span-5 flex flex-col gap-6 animate-slide-in-right">
-            <div className="bg-gradient-to-br from-slate-900 to-indigo-950 p-8 rounded-[2rem] shadow-2xl text-white relative overflow-hidden flex-grow flex flex-col border border-white/5">
-              <div className="relative z-10 mb-6 flex items-center gap-3">
-                <Sparkles className="w-6 h-6 text-amber-300" />
-                <h3 className="text-xl font-bold tracking-tight">Análise Estratégica IA</h3>
+          {/* AI Synthesis */}
+          <div className="lg:col-span-5 flex flex-col gap-6">
+            <div className={`p-8 rounded-[2.5rem] shadow-2xl text-white flex-grow flex flex-col ${isCorporate ? 'bg-gradient-to-br from-orange-600 to-amber-800' : 'bg-gradient-to-br from-slate-900 to-indigo-950'}`}>
+              <div className="mb-6 flex items-center gap-3">
+                <Sparkles className="w-6 h-6 text-yellow-300" />
+                <h3 className="text-xl font-black uppercase tracking-widest">Síntese Estratégica</h3>
               </div>
-              <div className="relative z-10 flex-grow">
-                {!aiAnalysis ? (
-                  <div className="h-full flex flex-col items-center justify-center text-center space-y-6 py-8">
-                    <p className="text-slate-300 text-sm font-light leading-relaxed">
-                      Sua análise personalizada está pronta para ser gerada. Nossa IA cruzará suas 21 dimensões para criar um mapa de carreira e plano de ação.
-                    </p>
-                    <button 
-                      onClick={handleGenerateAnalysis}
-                      disabled={loadingAi}
-                      className="w-full py-4 bg-white text-indigo-950 rounded-xl font-bold hover:bg-indigo-50 transition-all shadow-xl active:scale-95 disabled:opacity-70 flex items-center justify-center gap-2"
-                    >
-                      {loadingAi ? <div className="w-5 h-5 border-2 border-indigo-900 border-t-transparent rounded-full animate-spin"></div> : "Gerar Análise Premium"}
-                    </button>
-                  </div>
-                ) : (
-                  <div className="bg-white/10 backdrop-blur-md rounded-xl p-6 h-[400px] overflow-y-auto custom-scrollbar italic text-sm leading-relaxed whitespace-pre-line">
-                    {aiAnalysis}
-                  </div>
-                )}
-              </div>
+              
+              {!aiAnalysis ? (
+                <div className="flex-grow flex flex-col items-center justify-center text-center py-6">
+                  <p className="text-white/70 text-sm mb-6 font-light">
+                    Sua análise personalizada será gerada agora pela nossa IA de elite.
+                  </p>
+                  <button onClick={handleGenerateAnalysis} disabled={loadingAi} className="w-full py-4 bg-white text-slate-900 rounded-2xl font-black uppercase tracking-widest text-xs shadow-2xl hover:scale-105 transition-all flex items-center justify-center gap-2 disabled:opacity-50">
+                    {loadingAi ? <Loader2 className="animate-spin" /> : 'Gerar Relatório IA'}
+                  </button>
+                </div>
+              ) : (
+                <div className="bg-black/20 backdrop-blur-sm rounded-2xl p-6 h-[350px] overflow-y-auto text-sm leading-relaxed whitespace-pre-line custom-scrollbar font-medium">
+                  {aiAnalysis}
+                </div>
+              )}
             </div>
           </div>
         </div>
 
-        {/* Dimension Table */}
-        <div className="bg-white rounded-[2rem] p-8 mb-12 shadow-xl border border-slate-100">
-          <h3 className="text-xl font-bold text-slate-800 mb-8 uppercase tracking-widest text-sm opacity-50">Detalhamento das 21 Dimensões</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {results.map(dim => (
-              <div key={dim.dimensionId} className="group">
-                <div className="flex justify-between items-center mb-1.5">
-                  <span className="text-[11px] font-black text-slate-500 uppercase tracking-tighter group-hover:text-indigo-600 transition-colors">{dim.dimensionName}</span>
-                  <span className={`text-xs font-bold ${dim.score >= 70 ? 'text-emerald-600' : dim.score <= 30 ? 'text-rose-600' : 'text-slate-400'}`}>{dim.score}%</span>
+        {/* SMARTBOX ADM (Exclusivo Individual) */}
+        {isAdmin && !isCorporate && (
+          <div className="bg-slate-900 rounded-[2.5rem] p-8 md:p-12 mb-10 shadow-2xl border border-white/5 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 blur-[80px] -z-10" />
+            <div className="flex items-center gap-4 mb-8">
+              <div className="p-4 bg-indigo-600/20 rounded-2xl border border-indigo-500/30">
+                <MessageSquareText className="w-8 h-8 text-indigo-400" />
+              </div>
+              <div>
+                <h3 className="text-2xl font-black text-white leading-none">Smartbox Recrutamento</h3>
+                <p className="text-slate-500 text-xs mt-1 uppercase tracking-widest font-bold">Consulte a IA sobre este perfil</p>
+              </div>
+            </div>
+
+            <form onSubmit={handleSmartSubmit} className="relative mb-6">
+              <input 
+                type="text" 
+                value={smartQuery}
+                onChange={(e) => setSmartQuery(e.target.value)}
+                placeholder="Ex: Este candidato serve para construção civil? Ou: Como lidar com sua inibição social?"
+                className="w-full bg-black/40 border border-white/10 rounded-2xl py-5 pl-6 pr-20 text-white outline-none focus:ring-2 focus:ring-indigo-500 transition-all font-medium text-sm"
+              />
+              <button disabled={loadingSmart} type="submit" className="absolute right-3 top-1/2 -translate-y-1/2 p-4 bg-indigo-600 text-white rounded-xl hover:bg-indigo-500 transition-all disabled:opacity-50 shadow-xl">
+                {loadingSmart ? <Loader2 className="animate-spin w-5 h-5" /> : <Send className="w-5 h-5" />}
+              </button>
+            </form>
+
+            {smartResponse && (
+              <div className="bg-white/5 rounded-2xl p-6 border border-white/10 animate-fade-in">
+                <div className="flex items-center gap-2 text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-4">
+                  <BadgeCheck className="w-4 h-4" /> Resposta Técnica da IA
                 </div>
-                <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                   <div 
-                    className={`h-full transition-all duration-1000 ${dim.score >= 70 ? 'bg-emerald-500' : dim.score <= 30 ? 'bg-rose-500' : 'bg-indigo-400'}`}
-                    style={{ width: `${dim.score}%` }}
-                   />
+                <div className="text-slate-300 text-sm leading-relaxed italic whitespace-pre-line">
+                  {smartResponse}
                 </div>
               </div>
-            ))}
+            )}
           </div>
-        </div>
+        )}
 
-        {/* Actions */}
-        <div className="flex flex-col sm:flex-row justify-center gap-4 pb-20 px-4">
-           {isAdmin ? (
-             <button 
-              onClick={handlePrint}
-              className="flex items-center justify-center gap-3 px-10 py-5 bg-indigo-600 text-white rounded-2xl hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-500/30 font-bold group"
-            >
-              <Download className="w-6 h-6" />
-              Exportar Relatório Oficial (PDF)
+        {/* Action Buttons */}
+        <div className="flex flex-wrap justify-center gap-4 pb-20">
+          {isAdmin && (
+            <button onClick={handlePrint} className="flex items-center gap-2 px-10 py-5 bg-slate-900 text-white rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-black transition-all shadow-2xl">
+              <Download className="w-5 h-5" /> Exportar PDF Oficial
             </button>
-           ) : (
-             <div className="flex flex-col items-center gap-2">
-                <button 
-                  disabled
-                  className="flex items-center justify-center gap-3 px-10 py-5 bg-slate-200 text-slate-400 rounded-2xl cursor-not-allowed font-bold"
-                >
-                  <Printer className="w-6 h-6" />
-                  Salvar PDF (Apenas Admin)
-                </button>
-                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Contate o administrador para o arquivo PDF</p>
-             </div>
-           )}
-
-          <button 
-            onClick={onRestart}
-            className="flex items-center justify-center gap-3 px-10 py-5 bg-white border-2 border-slate-200 text-slate-500 rounded-2xl hover:border-slate-400 hover:text-slate-700 transition-all font-bold"
-          >
-            <RefreshCcw className="w-5 h-5" />
-            Novo Diagnóstico
+          )}
+          <button onClick={onRestart} className="flex items-center gap-2 px-10 py-5 bg-white border-2 border-slate-200 text-slate-500 rounded-2xl font-black uppercase tracking-widest text-xs hover:border-slate-400 transition-all">
+            <RefreshCcw className="w-4 h-4" /> Novo Teste
           </button>
         </div>
       </div>
 
-      {/* --- PRINT LAYOUT --- */}
-      <div className="hidden print:block w-full">
-         <div className="border-b-4 border-indigo-900 pb-8 mb-10 flex justify-between items-end">
-            <div>
-               <h1 className="text-5xl font-black text-slate-900 tracking-tighter uppercase">Insight<span className="text-indigo-600">360</span></h1>
-               <p className="text-indigo-700 font-bold text-sm tracking-[0.3em] uppercase mt-2">Relatório de Perfil Psicométrico</p>
-            </div>
-            <div className="text-right">
-               <p className="text-slate-400 text-[10px] font-bold uppercase mb-1">Candidato(a)</p>
-               <h2 className="text-2xl font-bold text-slate-900">{userInfo?.name}</h2>
-            </div>
-         </div>
-         {/* Conteúdo do PDF simplificado para impressão rápida */}
-         <div className="grid grid-cols-2 gap-10">
-            <div className="border border-slate-200 p-6 rounded-2xl">
-               <h3 className="font-bold text-slate-800 mb-4 border-b pb-2 uppercase text-xs">Pontuações por Dimensão</h3>
-               {results.map(r => (
-                 <div key={r.dimensionId} className="flex justify-between items-center py-1 text-[10px] border-b border-slate-50">
-                   <span className="font-medium text-slate-600 uppercase">{r.dimensionName}</span>
-                   <span className="font-bold text-indigo-700">{r.score}%</span>
-                 </div>
-               ))}
-            </div>
-            <div className="space-y-8">
-               <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200">
-                  <h3 className="font-bold text-slate-800 mb-4 uppercase text-xs">Identificação do Teste</h3>
-                  <p className="text-sm font-mono mb-1">ID: {testId}</p>
-                  <p className="text-sm">E-mail: {userInfo?.email}</p>
-                  <p className="text-sm">Data: {new Date().toLocaleDateString()}</p>
-               </div>
-               {aiAnalysis && (
-                 <div className="p-6">
-                    <h3 className="font-bold text-slate-800 mb-4 uppercase text-xs">Síntese do Perfil</h3>
-                    <p className="text-[11px] leading-relaxed italic text-slate-600">{aiAnalysis.slice(0, 1500)}...</p>
-                 </div>
-               )}
-            </div>
-         </div>
-         <div className="fixed bottom-0 left-0 w-full p-8 border-t border-slate-100 flex justify-between items-center text-[10px] text-slate-400 font-bold uppercase tracking-widest">
-            <span>insight360 intelligence platform</span>
-            <span>Relatório Oficial Gerado pelo Administrador</span>
-         </div>
+      {/* PRINT VIEW */}
+      <div className="hidden print:block w-full text-slate-900 font-sans p-10">
+        <div className={`border-b-8 pb-10 mb-10 flex justify-between items-end ${isCorporate ? 'border-orange-600' : 'border-indigo-600'}`}>
+          <div>
+            <h1 className="text-6xl font-black tracking-tighter uppercase">Insight360</h1>
+            <p className="text-lg font-bold uppercase tracking-[0.3em] mt-2 opacity-60">Relatório Psicométrico Oficial</p>
+          </div>
+          <div className="text-right">
+            <h2 className="text-3xl font-black">{userInfo?.name}</h2>
+            <p className="font-mono text-sm">ID: {testId} • {new Date().toLocaleDateString()}</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-10">
+          <div className="border border-slate-200 p-8 rounded-3xl">
+            <h3 className="font-black uppercase text-xs mb-6 opacity-50 border-b pb-2">Resultados por Dimensão</h3>
+            {results.map(r => (
+              <div key={r.dimensionId} className="flex justify-between items-center py-1.5 text-xs border-b border-slate-50 last:border-0">
+                <span className="font-bold uppercase text-slate-600">{r.dimensionName}</span>
+                <span className="font-black text-slate-900">{r.score}%</span>
+              </div>
+            ))}
+          </div>
+          <div className="space-y-10">
+            {aiAnalysis && (
+              <div className="bg-slate-50 p-8 rounded-3xl border border-slate-200">
+                <h3 className="font-black uppercase text-xs mb-4 opacity-50">Análise Sintética</h3>
+                <p className="text-[11px] leading-relaxed italic text-slate-700 whitespace-pre-line">{aiAnalysis}</p>
+              </div>
+            )}
+            {smartResponse && (
+              <div className="bg-indigo-50 p-8 rounded-3xl border border-indigo-200">
+                <h3 className="font-black uppercase text-xs mb-4 text-indigo-600">Smartbox Insights (ADM)</h3>
+                <p className="text-[10px] font-bold text-slate-500 mb-2 uppercase italic">P: {smartQuery}</p>
+                <p className="text-[11px] leading-relaxed text-indigo-900 italic whitespace-pre-line">{smartResponse}</p>
+              </div>
+            )}
+          </div>
+        </div>
+        
+        <div className="fixed bottom-10 left-0 w-full px-10 flex justify-between text-[8px] font-black uppercase tracking-widest opacity-30">
+          <span>Insight360 Intelligence • JOI.A. Platform</span>
+          <span>Cópia Controlada para fins de Recrutamento</span>
+        </div>
       </div>
+
+      <style>{`
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
+        @media print { .no-print { display: none !important; } }
+      `}</style>
     </div>
   );
 };

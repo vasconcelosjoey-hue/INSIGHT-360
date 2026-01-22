@@ -8,37 +8,48 @@ export const generatePsychologicalAnalysis = async (
   customPrompt?: string
 ): Promise<string> => {
   try {
+    // Inicializa a IA com a chave de ambiente
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     
-    const dataSummary = results.map(r => `${r.dimensionName}: ${r.score}%`).join('\n');
+    // Formata os scores para a IA processar
+    const dataFormatted = results.map(r => `${r.dimensionName}: ${r.score}%`).join('\n');
 
     const systemInstruction = isCorporate 
-      ? "Você é um Consultor Sênior de Saúde Organizacional. Sua tarefa é fornecer um diagnóstico preciso e recomendações estratégicas baseadas em dados psicométricos de grupo."
-      : "Você é um Psicólogo Organizacional Especialista. Forneça uma análise técnica do perfil individual, destacando talentos e pontos de atenção.";
+      ? "Você é um Consultor de RH Sênior e Analista de Saúde Organizacional. Escreva um parecer técnico profissional, direto e acionável sobre os resultados de uma equipe."
+      : "Você é um Psicólogo Organizacional e Mentor de Carreira. Escreva uma análise empática e técnica sobre o perfil individual do avaliado.";
 
     const prompt = `
-      RESULTADOS DO QUESTIONÁRIO:
-      ${dataSummary}
+      RESULTADOS DO MAPEAMENTO (SCORES 0-100%):
+      ${dataFormatted}
       
-      SOLICITAÇÃO ESPECÍFICA:
-      ${customPrompt || "Gere um parecer técnico completo e sugestões de desenvolvimento."}
+      SOLICITAÇÃO DO CONSULTOR:
+      ${customPrompt || "Gere uma síntese estratégica dos resultados destacando pontos fortes e áreas de desenvolvimento."}
       
-      IMPORTANTE: Responda em Português. Seja profissional, profundo e direto.
+      REGRAS:
+      - Responda em Português do Brasil.
+      - Use um tom técnico e respeitoso.
+      - Não use formatação Markdown pesada (evite excesso de #).
+      - Foque no diagnóstico e em passos práticos.
     `;
 
+    // Usando gemini-3-flash-preview para maior estabilidade e velocidade
     const response = await ai.models.generateContent({
-      model: 'gemini-3-pro-preview',
+      model: 'gemini-3-flash-preview',
       contents: prompt,
       config: { 
         systemInstruction,
-        temperature: 0.6,
-        thinkingConfig: { thinkingBudget: 1000 }
+        temperature: 0.5,
       }
     });
 
-    return response.text || "Análise gerada com sucesso.";
+    if (!response || !response.text) {
+      throw new Error("Resposta vazia da IA");
+    }
+
+    return response.text;
   } catch (error: any) {
-    console.error("Erro na IA:", error);
-    return "O sistema de IA está temporariamente indisponível. Por favor, tente enviar sua pergunta novamente.";
+    console.error("Gemini API Error:", error);
+    // Retorno amigável para o componente tratar
+    throw new Error("INSTABILITY_ERROR");
   }
 };

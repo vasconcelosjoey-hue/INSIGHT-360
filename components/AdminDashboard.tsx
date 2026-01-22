@@ -4,9 +4,10 @@ import { getAllLeads, getAllCompanies, saveCompany, getCompanyAggregate } from '
 import { Layers, Search, Mail, Phone, Calendar, ArrowLeft, ExternalLink, RefreshCcw, Loader2, FileText, Users, UserCircle, Building2, Plus, X, ShieldCheck, CheckCircle2 } from 'lucide-react';
 import { ProcessedResult, UserInfo, Company } from '../types';
 
+// Fix: Added missing interface definition for AdminDashboard component props
 interface AdminDashboardProps {
   onBack: () => void;
-  onViewLead: (userInfo: UserInfo, results: any[], testId: string) => void;
+  onViewLead: (userInfo: any, results: ProcessedResult[], testId: string) => void;
 }
 
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack, onViewLead }) => {
@@ -15,27 +16,59 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack, onViewLe
   const [companies, setCompanies] = useState<Company[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [saving, setSaving] = useState(false);
   
   // Modal State
   const [showAddCompany, setShowAddCompany] = useState(false);
-  const [newCompany, setNewCompany] = useState({ name: '', cnpj: '', startDate: '', endDate: '' });
+  const [newCompany, setNewCompany] = useState({ 
+    name: '', 
+    cnpj: '', 
+    startDay: '', 
+    startMonth: '', 
+    endDay: '', 
+    endMonth: '' 
+  });
 
   const fetchData = async () => {
     setLoading(true);
-    const [lData, cData] = await Promise.all([getAllLeads(), getAllCompanies()]);
-    setLeads(lData);
-    setCompanies(cData);
-    setLoading(false);
+    try {
+      const [lData, cData] = await Promise.all([getAllLeads(), getAllCompanies()]);
+      setLeads(lData);
+      setCompanies(cData);
+    } catch (e) {
+      console.error("Erro ao carregar dados:", e);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => { fetchData(); }, []);
 
   const handleAddCompany = async (e: React.FormEvent) => {
     e.preventDefault();
-    await saveCompany(newCompany);
-    setNewCompany({ name: '', cnpj: '', startDate: '', endDate: '' });
-    setShowAddCompany(false);
-    fetchData();
+    setSaving(true);
+    
+    // Formata as datas para YYYY-MM-DD (Ano fixo 2026)
+    const formattedStart = `2026-${newCompany.startMonth.padStart(2, '0')}-${newCompany.startDay.padStart(2, '0')}`;
+    const formattedEnd = `2026-${newCompany.endMonth.padStart(2, '0')}-${newCompany.endDay.padStart(2, '0')}`;
+
+    try {
+      await saveCompany({
+        name: newCompany.name.toUpperCase(),
+        cnpj: newCompany.cnpj || 'ISENTO',
+        startDate: formattedStart,
+        endDate: formattedEnd
+      });
+      
+      setNewCompany({ name: '', cnpj: '', startDay: '', startMonth: '', endDay: '', endMonth: '' });
+      setShowAddCompany(false);
+      await fetchData();
+    } catch (error) {
+      console.error("Erro ao salvar empresa:", error);
+      alert("Houve um erro ao salvar o registro. Verifique a conexão.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleViewCompanyResults = async (company: Company) => {
@@ -75,7 +108,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack, onViewLe
       </header>
 
       <main className="max-w-7xl mx-auto p-6 md:p-12">
-        {activeTab === 'leads' ? (
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-40 gap-4">
+             <Loader2 className="w-12 h-12 text-indigo-500 animate-spin" />
+             <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500">Sincronizando Banco de Dados...</p>
+          </div>
+        ) : activeTab === 'leads' ? (
           <>
             <div className="relative mb-8 max-w-xl">
               <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
@@ -133,30 +171,67 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack, onViewLe
 
       {/* Modal Cadastro Empresa */}
       {showAddCompany && (
-        <div className="fixed inset-0 z-[600] flex items-center justify-center p-6 bg-black/90 backdrop-blur-md animate-fade-in">
-          <div className="w-full max-w-md bg-slate-900 border border-white/10 rounded-[2.5rem] p-10 relative">
-            <button onClick={() => setShowAddCompany(false)} className="absolute top-6 right-6 p-2 text-slate-500 hover:text-white"><X className="w-6 h-6" /></button>
-            <h3 className="text-2xl font-black text-white mb-8 flex items-center gap-3"><Building2 className="text-orange-500" /> Nova Empresa</h3>
-            <form onSubmit={handleAddCompany} className="space-y-4">
+        <div className="fixed inset-0 z-[600] flex items-center justify-center p-6 bg-black/95 backdrop-blur-md animate-fade-in">
+          <div className="w-full max-w-md bg-[#0a0f1d] border border-white/10 rounded-[2.5rem] p-10 relative shadow-2xl">
+            <button onClick={() => setShowAddCompany(false)} className="absolute top-8 right-8 p-2 text-slate-500 hover:text-white transition-colors"><X className="w-6 h-6" /></button>
+            
+            <div className="flex items-center gap-4 mb-8">
+              <div className="p-3 bg-orange-500/10 rounded-xl"><Building2 className="w-6 h-6 text-orange-500" /></div>
+              <h3 className="text-2xl font-black text-white uppercase tracking-tighter">Nova Empresa</h3>
+            </div>
+
+            <form onSubmit={handleAddCompany} className="space-y-6">
               <div>
-                <label className="text-[9px] font-black text-orange-400 uppercase tracking-widest ml-1">Nome da Empresa (CAPSLOCK)</label>
-                <input type="text" required placeholder="EX: MINHA EMPRESA LTDA" className="w-full bg-black/40 border border-white/10 text-white rounded-xl py-4 px-5 outline-none focus:ring-1 focus:ring-orange-500 transition-all uppercase" value={newCompany.name} onChange={(e) => setNewCompany({...newCompany, name: e.target.value.toUpperCase()})} />
+                <label className="text-[9px] font-black text-orange-400 uppercase tracking-[0.2em] ml-1 mb-2 block">Nome da Empresa (CAPSLOCK)</label>
+                <input 
+                  type="text" 
+                  required 
+                  placeholder="DIGITE O NOME" 
+                  className="w-full bg-black/40 border border-white/10 text-white rounded-2xl py-5 px-6 outline-none focus:ring-1 focus:ring-orange-500 transition-all uppercase font-bold text-sm" 
+                  value={newCompany.name} 
+                  onChange={(e) => setNewCompany({...newCompany, name: e.target.value.toUpperCase()})} 
+                />
               </div>
+
               <div>
-                <label className="text-[9px] font-black text-orange-400 uppercase tracking-widest ml-1">CNPJ</label>
-                <input type="text" required placeholder="00.000.000/0001-00" className="w-full bg-black/40 border border-white/10 text-white rounded-xl py-4 px-5 outline-none" value={newCompany.cnpj} onChange={(e) => setNewCompany({...newCompany, cnpj: e.target.value})} />
+                <label className="text-[9px] font-black text-orange-400 uppercase tracking-[0.2em] ml-1 mb-2 block">CNPJ (Opcional)</label>
+                <input 
+                  type="text" 
+                  placeholder="00.000.000/0001-00" 
+                  className="w-full bg-black/40 border border-white/10 text-white rounded-2xl py-5 px-6 outline-none text-sm" 
+                  value={newCompany.cnpj} 
+                  onChange={(e) => setNewCompany({...newCompany, cnpj: e.target.value})} 
+                />
               </div>
+
               <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-[9px] font-black text-orange-400 uppercase tracking-widest ml-1">Data Início</label>
-                  <input type="date" required className="w-full bg-black/40 border border-white/10 text-white rounded-xl py-4 px-5 outline-none" value={newCompany.startDate} onChange={(e) => setNewCompany({...newCompany, startDate: e.target.value})} />
+                <div className="space-y-2">
+                  <label className="text-[9px] font-black text-orange-400 uppercase tracking-[0.2em] ml-1 block">Início (Dia/Mês)</label>
+                  <div className="flex gap-2">
+                    <input type="number" required min="1" max="31" placeholder="Dia" className="w-full bg-black/40 border border-white/10 text-white rounded-xl py-4 px-4 outline-none text-center text-sm" value={newCompany.startDay} onChange={(e) => setNewCompany({...newCompany, startDay: e.target.value})} />
+                    <input type="number" required min="1" max="12" placeholder="Mês" className="w-full bg-black/40 border border-white/10 text-white rounded-xl py-4 px-4 outline-none text-center text-sm" value={newCompany.startMonth} onChange={(e) => setNewCompany({...newCompany, startMonth: e.target.value})} />
+                  </div>
                 </div>
-                <div>
-                  <label className="text-[9px] font-black text-orange-400 uppercase tracking-widest ml-1">Data Fim</label>
-                  <input type="date" required className="w-full bg-black/40 border border-white/10 text-white rounded-xl py-4 px-5 outline-none" value={newCompany.endDate} onChange={(e) => setNewCompany({...newCompany, endDate: e.target.value})} />
+                <div className="space-y-2">
+                  <label className="text-[9px] font-black text-orange-400 uppercase tracking-[0.2em] ml-1 block">Fim (Dia/Mês)</label>
+                  <div className="flex gap-2">
+                    <input type="number" required min="1" max="31" placeholder="Dia" className="w-full bg-black/40 border border-white/10 text-white rounded-xl py-4 px-4 outline-none text-center text-sm" value={newCompany.endDay} onChange={(e) => setNewCompany({...newCompany, endDay: e.target.value})} />
+                    <input type="number" required min="1" max="12" placeholder="Mês" className="w-full bg-black/40 border border-white/10 text-white rounded-xl py-4 px-4 outline-none text-center text-sm" value={newCompany.endMonth} onChange={(e) => setNewCompany({...newCompany, endMonth: e.target.value})} />
+                  </div>
                 </div>
               </div>
-              <button type="submit" className="w-full py-5 bg-orange-600 text-white rounded-xl font-black uppercase tracking-widest text-xs shadow-xl mt-4">Salvar Registro</button>
+
+              <div className="bg-orange-500/5 border border-orange-500/10 p-4 rounded-xl text-center">
+                 <p className="text-[8px] font-black text-orange-400 uppercase tracking-widest">Ano Automático: 2026</p>
+              </div>
+
+              <button 
+                type="submit" 
+                disabled={saving}
+                className="w-full py-5 bg-orange-600 text-white rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl shadow-orange-900/40 hover:bg-orange-500 transition-all flex items-center justify-center gap-3 disabled:opacity-50"
+              >
+                {saving ? <Loader2 className="animate-spin w-5 h-5" /> : 'Salvar Registro'}
+              </button>
             </form>
           </div>
         </div>

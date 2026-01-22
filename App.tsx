@@ -32,14 +32,9 @@ const App: React.FC = () => {
     return result;
   };
 
-  const handleAdminTrigger = () => {
-    const secret = prompt("Configurações do Sistema - Digite a frase secreta:");
-    if (secret === "dimensao360") {
-      setIsAdmin(true);
-      setQuizState('admin');
-    } else if (secret !== null) {
-      alert("Acesso negado. Frase incorreta.");
-    }
+  const handleAdminLogin = () => {
+    setIsAdmin(true);
+    setQuizState('admin');
   };
 
   const handleLeadSubmit = (info: UserInfo) => {
@@ -61,7 +56,6 @@ const App: React.FC = () => {
     setAnswers({});
   };
 
-  // Alterado para não avançar automaticamente
   const handleAnswer = (value: number) => {
     const currentQuestion = QUESTIONS[currentQuestionIndex];
     if (!currentQuestion) return;
@@ -92,7 +86,6 @@ const App: React.FC = () => {
 
     if (firstUnansweredIndex !== -1) {
       setCurrentQuestionIndex(firstUnansweredIndex);
-      // O componente QuizStep agora lida com o feedback visual de erro
     } else {
       setQuizState('thank-you');
     }
@@ -152,19 +145,8 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen h-screen bg-slate-50 font-sans text-slate-900 flex flex-col relative overflow-hidden">
-      
-      {(quizState === 'lead-capture' || quizState === 'intro') && (
-        <button 
-          onClick={handleAdminTrigger}
-          className="fixed top-2 right-2 z-[200] p-4 opacity-0 hover:opacity-10 transition-opacity"
-          title="Acesso Admin"
-        >
-          <Settings className="w-5 h-5 text-slate-400" />
-        </button>
-      )}
-
       <main className="flex-grow w-full h-full overflow-hidden">
-        {quizState === 'lead-capture' && <LeadCapture onComplete={handleLeadSubmit} />}
+        {quizState === 'lead-capture' && <LeadCapture onComplete={handleLeadSubmit} onAdminLogin={handleAdminLogin} />}
         {quizState === 'disclaimer' && <Disclaimer onAccept={handleDisclaimerAccept} />}
         {quizState === 'welcome' && <WelcomeWizard onComplete={handleWelcomeComplete} />}
         {quizState === 'thank-you' && <ThankYou onContinue={handleThankYouComplete} />}
@@ -191,7 +173,6 @@ const App: React.FC = () => {
                   Iniciar Novo Diagnóstico
                   <ArrowRight className="ml-3 w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </button>
-                {/* Removido botões de importação e entrada manual por solicitação do usuário */}
               </div>
             </div>
           </div>
@@ -234,19 +215,13 @@ const App: React.FC = () => {
         )}
       </main>
 
-      {quizState !== 'admin' && quizState !== 'test' && (
+      {quizState !== 'admin' && quizState !== 'test' && quizState !== 'lead-capture' && (
         <footer className="w-full py-4 text-center border-t border-slate-200 bg-white/50 backdrop-blur-sm print:hidden">
           <p className="text-[10px] font-bold text-slate-400 tracking-[0.4em] uppercase">
             powered By <span className="text-indigo-600">JOI.A.</span>
           </p>
         </footer>
       )}
-
-      <style>{`
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #4f46e5; border-radius: 10px; }
-      `}</style>
     </div>
   );
 };

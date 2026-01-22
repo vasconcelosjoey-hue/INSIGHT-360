@@ -86,17 +86,13 @@ const App: React.FC = () => {
     if (firstUnansweredIndex !== -1) {
       setCurrentQuestionIndex(firstUnansweredIndex);
     } else {
-      // Quando termina, vai para a tela de processamento/obrigado
-      setQuizState('thank-you');
+      processResults(currentAnswers);
     }
   };
 
-  // Chamado após a animação da tela de ThankYou
-  const handleThankYouComplete = () => {
-    calculateAndSaveResults(answers);
-  };
-
-  const calculateAndSaveResults = async (finalAnswers: Record<number, number>) => {
+  const processResults = async (finalAnswers: Record<number, number>) => {
+    setQuizState('thank-you');
+    
     const newId = generateTestId();
     setTestId(newId);
     
@@ -126,20 +122,15 @@ const App: React.FC = () => {
       };
     });
 
-    // Salva no Banco de Dados
+    setResults(processed);
+
     if (userInfo) {
       await saveTestResult(userInfo, processed, newId);
     }
-
-    setResults(processed);
     
-    // IMPORTANTE: Se for usuário comum, vai para a tela final (agradecimento definitivo)
-    // Se for admin testando, pode ver os resultados
-    if (isAdmin) {
-      setQuizState('results');
-    } else {
-      setQuizState('final-screen');
-    }
+    setTimeout(() => {
+        setQuizState(isAdmin ? 'results' : 'final-screen');
+    }, 4000);
   };
 
   const handleViewLead = (info: UserInfo, res: ProcessedResult[], id: string) => {
@@ -155,10 +146,8 @@ const App: React.FC = () => {
         {quizState === 'lead-capture' && <LeadCapture onComplete={handleLeadSubmit} onAdminLogin={handleAdminLogin} />}
         {quizState === 'disclaimer' && <Disclaimer onAccept={handleDisclaimerAccept} />}
         {quizState === 'welcome' && <WelcomeWizard onComplete={handleWelcomeComplete} />}
-        
-        {quizState === 'thank-you' && <ThankYou onContinue={handleThankYouComplete} isFinal={false} />}
+        {quizState === 'thank-you' && <ThankYou onContinue={() => {}} isFinal={false} />}
         {quizState === 'final-screen' && <ThankYou onContinue={() => window.location.reload()} isFinal={true} />}
-        
         {quizState === 'admin' && <AdminDashboard onBack={() => { setIsAdmin(false); setQuizState('lead-capture'); }} onViewLead={handleViewLead} />}
 
         {quizState === 'intro' && (
@@ -172,17 +161,15 @@ const App: React.FC = () => {
                 Perfil <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-violet-400">Insight360</span>
               </h1>
               <p className="text-base md:text-xl text-slate-300 mb-8 max-w-2xl mx-auto font-light leading-relaxed">
-                Bem-vindo(a), <span className="text-indigo-300 font-medium">{userInfo?.name.split(' ')[0]}</span>. Inicie seu mapeamento comportamental agora.
+                Inicie seu mapeamento comportamental agora.
               </p>
-              <div className="flex flex-col items-center gap-4">
-                <button 
-                  onClick={handleStart}
-                  className="group relative inline-flex items-center justify-center px-12 py-5 text-lg font-bold text-white bg-gradient-to-r from-indigo-600 to-violet-600 rounded-2xl shadow-xl shadow-indigo-500/40 hover:scale-105 transition-all w-full md:w-auto"
-                >
-                  Iniciar Mapeamento
-                  <ArrowRight className="ml-3 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                </button>
-              </div>
+              <button 
+                onClick={handleStart}
+                className="group relative inline-flex items-center justify-center px-12 py-5 text-lg font-bold text-white bg-gradient-to-r from-indigo-600 to-violet-600 rounded-2xl shadow-xl shadow-indigo-500/40 hover:scale-105 transition-all w-full md:w-auto"
+              >
+                Iniciar Mapeamento
+                <ArrowRight className="ml-3 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              </button>
             </div>
           </div>
         )}

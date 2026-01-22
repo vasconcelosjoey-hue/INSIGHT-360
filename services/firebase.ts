@@ -15,34 +15,34 @@ const firebaseConfig = {
 let db: any = null;
 
 try {
-    const app = initializeApp(firebaseConfig);
-    db = getFirestore(app);
+  const app = initializeApp(firebaseConfig);
+  db = getFirestore(app);
+  console.log("🚀 Firebase: Conexão estabelecida.");
 } catch (error) {
-    console.error("Erro ao inicializar Firebase:", error);
+  console.error("❌ Firebase: Erro de conexão:", error);
 }
 
 export const saveTestResult = async (userInfo: UserInfo, results: ProcessedResult[], testId: string) => {
   if (!db) return false;
 
   try {
-    const simpleResults = results.map(r => ({
+    const docRef = await addDoc(collection(db, "leads"), {
+      testId,
+      name: userInfo.name,
+      email: userInfo.email || "não informado",
+      whatsapp: userInfo.whatsapp,
+      results: results.map(r => ({
         id: r.dimensionId,
         name: r.dimensionName,
         score: Math.round(r.score)
-    }));
-
-    await addDoc(collection(db, "leads"), {
-      testId: testId,
-      ...userInfo,
-      results: simpleResults,
+      })),
       createdAt: serverTimestamp(),
-      platform: navigator.userAgent,
       completedAt: new Date().toISOString()
     });
-
+    console.log("✅ Dados sincronizados. ID:", docRef.id);
     return true;
   } catch (e) {
-    console.error("Erro ao salvar lead: ", e);
+    console.error("❌ Erro ao sincronizar:", e);
     return false;
   }
 };
@@ -57,7 +57,7 @@ export const getAllLeads = async () => {
       ...doc.data()
     }));
   } catch (e) {
-    console.error("Erro ao buscar leads: ", e);
+    console.error("❌ Erro ao buscar dados:", e);
     return [];
   }
 };

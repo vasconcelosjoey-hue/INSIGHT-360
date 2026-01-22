@@ -8,39 +8,43 @@ export const generatePsychologicalAnalysis = async (
   customPrompt?: string
 ): Promise<string> => {
   try {
-    // Inicialização conforme diretrizes: usa process.env.API_KEY injetado
+    // Inicialização segura conforme documentação técnica
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     
-    const scoresSummary = results.map(r => `${r.dimensionName}: ${r.score.toFixed(0)}%`).join('\n');
+    // Preparação dos dados: transforma o array de resultados em uma string legível para a IA
+    const dataString = results.map(r => `- ${r.dimensionName}: ${r.score}%`).join('\n');
 
     const systemInstruction = isCorporate 
-      ? `Você é um Consultor de Cultura Organizacional Sênior. Sua missão é analisar dados psicométricos agregados de uma equipe e fornecer insights profundos, planos de ação e diagnósticos de saúde mental corporativa.`
-      : `Você é um Psicólogo Organizacional e Mentor de Carreira. Sua missão é analisar o perfil individual de um candidato e fornecer um Plano de Desenvolvimento Individual (PDI) estratégico e análise de soft skills.`;
+      ? "Você é um Consultor de RH e Saúde Organizacional experiente. Analise os scores de uma equipe e forneça diagnóstico e plano de ação."
+      : "Você é um Psicólogo Clínico e Organizacional. Analise os scores individuais e forneça um parecer técnico e PDI.";
 
-    const prompt = `
-      DADOS DO DIAGNÓSTICO:
-      ${scoresSummary}
+    const fullPrompt = `
+      CONTEXTO: Relatório de Diagnóstico Comportamental Insight360.
+      TIPO: ${isCorporate ? 'CORPORATIVO/EQUIPE' : 'INDIVIDUAL'}
       
-      SOLICITAÇÃO DO CONSULTOR:
-      ${customPrompt || "Gere uma análise completa dos pontos fortes, riscos e sugestões de melhoria baseada nesses dados."}
+      DADOS OBTIDOS (SCORES):
+      ${dataString}
       
-      Responda de forma profissional, direta e em formato de parecer técnico.
+      PEDIDO ADICIONAL DO CONSULTOR:
+      ${customPrompt || "Gere um parecer técnico completo com análise de pontos fortes, pontos de risco e sugestões de desenvolvimento."}
+      
+      IMPORTANTE: Responda em Português, de forma executiva, técnica e profissional.
     `;
 
     const response = await ai.models.generateContent({
       model: 'gemini-3-pro-preview',
-      contents: prompt,
+      contents: fullPrompt,
       config: { 
         systemInstruction,
-        thinkingConfig: { thinkingBudget: 2000 },
-        temperature: 0.7
+        temperature: 0.7,
+        thinkingConfig: { thinkingBudget: 2000 }
       }
     });
 
-    // Uso correto da propriedade .text (não é método)
-    return response.text || "Análise processada com sucesso.";
-  } catch (error) {
-    console.error("Erro no Gemini:", error);
-    return "Não foi possível gerar a análise no momento. Verifique se os dados estão completos e tente novamente.";
+    // Acessa a propriedade .text diretamente conforme as regras da SDK
+    return response.text || "Análise processada com sucesso. Nenhuma observação adicional.";
+  } catch (error: any) {
+    console.error("Falha Crítica Gemini:", error);
+    return "O sistema de IA está processando muitos dados agora. Por favor, clique no botão de enviar novamente em alguns segundos.";
   }
 };

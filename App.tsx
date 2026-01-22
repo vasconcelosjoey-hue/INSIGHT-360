@@ -11,8 +11,7 @@ import { LeadCapture } from './components/LeadCapture';
 import { ThankYou } from './components/ThankYou';
 import { AdminDashboard } from './components/AdminDashboard';
 import { saveTestResult } from './services/firebase';
-import { extractScoresFromText } from './services/geminiService';
-import { Brain, ArrowRight, Layers, Settings } from 'lucide-react';
+import { Layers, ArrowRight } from 'lucide-react';
 
 const App: React.FC = () => {
   const [quizState, setQuizState] = useState<QuizState>('lead-capture');
@@ -87,16 +86,17 @@ const App: React.FC = () => {
     if (firstUnansweredIndex !== -1) {
       setCurrentQuestionIndex(firstUnansweredIndex);
     } else {
+      // Quando termina, vai para a tela de processamento/obrigado
       setQuizState('thank-you');
     }
   };
 
+  // Chamado após a animação da tela de ThankYou
   const handleThankYouComplete = () => {
-    calculateResults(answers);
+    calculateAndSaveResults(answers);
   };
 
-  const calculateResults = async (finalAnswers: Record<number, number>) => {
-    setQuizState('calculating');
+  const calculateAndSaveResults = async (finalAnswers: Record<number, number>) => {
     const newId = generateTestId();
     setTestId(newId);
     
@@ -126,14 +126,20 @@ const App: React.FC = () => {
       };
     });
 
+    // Salva no Banco de Dados
     if (userInfo) {
-      saveTestResult(userInfo, processed, newId).catch(console.error);
+      await saveTestResult(userInfo, processed, newId);
     }
 
-    setTimeout(() => {
-      setResults(processed);
+    setResults(processed);
+    
+    // IMPORTANTE: Se for usuário comum, vai para a tela final (agradecimento definitivo)
+    // Se for admin testando, pode ver os resultados
+    if (isAdmin) {
       setQuizState('results');
-    }, 2500);
+    } else {
+      setQuizState('final-screen');
+    }
   };
 
   const handleViewLead = (info: UserInfo, res: ProcessedResult[], id: string) => {
@@ -149,7 +155,10 @@ const App: React.FC = () => {
         {quizState === 'lead-capture' && <LeadCapture onComplete={handleLeadSubmit} onAdminLogin={handleAdminLogin} />}
         {quizState === 'disclaimer' && <Disclaimer onAccept={handleDisclaimerAccept} />}
         {quizState === 'welcome' && <WelcomeWizard onComplete={handleWelcomeComplete} />}
-        {quizState === 'thank-you' && <ThankYou onContinue={handleThankYouComplete} />}
+        
+        {quizState === 'thank-you' && <ThankYou onContinue={handleThankYouComplete} isFinal={false} />}
+        {quizState === 'final-screen' && <ThankYou onContinue={() => window.location.reload()} isFinal={true} />}
+        
         {quizState === 'admin' && <AdminDashboard onBack={() => { setIsAdmin(false); setQuizState('lead-capture'); }} onViewLead={handleViewLead} />}
 
         {quizState === 'intro' && (
@@ -170,7 +179,7 @@ const App: React.FC = () => {
                   onClick={handleStart}
                   className="group relative inline-flex items-center justify-center px-12 py-5 text-lg font-bold text-white bg-gradient-to-r from-indigo-600 to-violet-600 rounded-2xl shadow-xl shadow-indigo-500/40 hover:scale-105 transition-all w-full md:w-auto"
                 >
-                  Iniciar Novo Diagnóstico
+                  Iniciar Mapeamento
                   <ArrowRight className="ml-3 w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </button>
               </div>
@@ -201,27 +210,7 @@ const App: React.FC = () => {
             />
           </div>
         )}
-
-        {quizState === 'calculating' && (
-          <div className="h-full flex flex-col items-center justify-center text-center p-6 bg-slate-50">
-             <div className="relative w-32 h-32 mb-8">
-               <div className="absolute inset-0 border-4 border-indigo-100 rounded-full"></div>
-               <div className="absolute inset-0 border-4 border-indigo-600 rounded-full border-t-transparent animate-spin"></div>
-               <Brain className="absolute inset-0 m-auto w-12 h-12 text-indigo-600 animate-pulse" />
-             </div>
-            <h2 className="text-3xl font-bold text-slate-900 mb-2">Construindo Gráfico 360°</h2>
-            <p className="text-slate-500 text-lg">Nossa IA está correlacionando suas tendências comportamentais...</p>
-          </div>
-        )}
       </main>
-
-      {quizState !== 'admin' && quizState !== 'test' && quizState !== 'lead-capture' && (
-        <footer className="w-full py-4 text-center border-t border-slate-200 bg-white/50 backdrop-blur-sm print:hidden">
-          <p className="text-[10px] font-bold text-slate-400 tracking-[0.4em] uppercase">
-            powered By <span className="text-indigo-600">JOI.A.</span>
-          </p>
-        </footer>
-      )}
     </div>
   );
 };

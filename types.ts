@@ -34,9 +34,8 @@ export type QuizState =
   | 'welcome' 
   | 'intro' 
   | 'test' 
-  | 'manual_input' 
-  | 'import-text' 
   | 'thank-you'
+  | 'final-screen'
   | 'calculating' 
   | 'results' 
   | 'admin';

@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { getAllLeads, getAllCompanies, saveCompany, getCompanyAggregate } from '../services/firebase';
-import { Layers, Search, Mail, Phone, Calendar, ArrowLeft, ExternalLink, RefreshCcw, Loader2, FileText, Users, UserCircle, Building2, Plus, X, ShieldCheck, CheckCircle2, AlertTriangle, ShieldAlert } from 'lucide-react';
+import { Layers, Search, Mail, Phone, Calendar, ArrowLeft, ExternalLink, RefreshCcw, Loader2, FileText, Users, UserCircle, Building2, Plus, X, ShieldCheck, CheckCircle2, AlertTriangle, ShieldAlert, Filter } from 'lucide-react';
 import { ProcessedResult, UserInfo, Company } from '../types';
 
 interface AdminDashboardProps {
@@ -11,6 +11,7 @@ interface AdminDashboardProps {
 
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack, onViewLead }) => {
   const [activeTab, setActiveTab] = useState<'leads' | 'companies'>('leads');
+  const [leadFilter, setLeadFilter] = useState<'all' | 'individual' | 'corporate'>('all');
   const [leads, setLeads] = useState<any[]>([]);
   const [companies, setCompanies] = useState<Company[]>([]);
   const [loading, setLoading] = useState(true);
@@ -54,7 +55,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack, onViewLe
     e.preventDefault();
     setSaving(true);
     
-    // Formata as datas para YYYY-MM-DD (Ano fixo 2026)
     const formattedStart = `2026-${newCompany.startMonth.padStart(2, '0')}-${newCompany.startDay.padStart(2, '0')}`;
     const formattedEnd = `2026-${newCompany.endMonth.padStart(2, '0')}-${newCompany.endDay.padStart(2, '0')}`;
 
@@ -71,11 +71,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack, onViewLe
       await fetchData();
     } catch (error: any) {
       console.error("Erro ao salvar empresa:", error);
-      if (error?.message?.includes('permission')) {
-        alert("Erro de Permissão: Você precisa alterar as 'Rules' do seu Firestore para 'allow read, write: if true;' no console do Firebase.");
-      } else {
-        alert("Erro técnico. Verifique sua conexão ou console.");
-      }
+      alert("Houve um problema ao salvar. Verifique se as permissões do Firebase estão abertas.");
     } finally {
       setSaving(false);
     }
@@ -94,10 +90,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack, onViewLe
     }
   };
 
-  const filteredLeads = (leads || []).filter(l => 
-    l.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    l.companyName?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredLeads = (leads || []).filter(l => {
+    const matchesSearch = l.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                          l.companyName?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesType = leadFilter === 'all' || l.testType === leadFilter;
+    return matchesSearch && matchesType;
+  });
 
   return (
     <div className="min-h-screen bg-[#070b14] text-slate-200 w-full font-sans pb-20">
@@ -128,10 +126,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack, onViewLe
             <div className="bg-rose-500/10 p-6 rounded-full mb-8 border border-rose-500/20">
                <ShieldAlert className="w-16 h-16 text-rose-500" />
             </div>
-            <h2 className="text-3xl font-black text-white mb-4 uppercase tracking-tighter">Acesso Bloqueado pelo Firebase</h2>
+            <h2 className="text-3xl font-black text-white mb-4 uppercase tracking-tighter">Acesso Bloqueado</h2>
             <p className="text-slate-400 text-sm leading-relaxed mb-8">
-              O banco de dados Firestore está recusando as permissões de leitura e escrita. <br /><br />
-              <strong>Como resolver:</strong> Vá ao console do Firebase > Firestore Database > Rules e altere para <code className="bg-black p-1 text-rose-400 text-xs">allow read, write: if true;</code>
+              O banco de dados Firestore está recusando o acesso. Suas Rules devem estar como "allow read, write: if true;".
             </p>
             <button onClick={fetchData} className="px-8 py-4 bg-white text-slate-900 rounded-2xl font-black uppercase tracking-widest text-xs flex items-center gap-2">
               <RefreshCcw className="w-4 h-4" /> Tentar Novamente
@@ -139,36 +136,57 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack, onViewLe
           </div>
         ) : activeTab === 'leads' ? (
           <>
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-10 gap-6 animate-fade-in">
-              <h2 className="text-4xl font-black text-white leading-tight">Diagnósticos <span className="text-indigo-500">Individuais</span></h2>
-              <div className="relative w-full max-w-sm">
-                <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-                <input type="text" placeholder="Filtrar por nome ou empresa..." className="w-full bg-black/40 border border-white/10 text-white rounded-2xl py-4 pl-14 pr-4 outline-none text-xs transition-all focus:border-indigo-500/50" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6 animate-fade-in">
+              <div>
+                <h2 className="text-4xl font-black text-white leading-tight">Diagnósticos <span className="text-indigo-500">Individuais</span></h2>
+                <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest mt-2">Exibindo {filteredLeads.length} de {leads.length} registros totais</p>
+              </div>
+              
+              <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
+                {/* Tipo de Lead Switcher */}
+                <div className="flex bg-black/40 p-1 rounded-xl border border-white/10 w-full md:w-auto">
+                  <button onClick={() => setLeadFilter('all')} className={`px-4 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${leadFilter === 'all' ? 'bg-white/10 text-white' : 'text-slate-500 hover:text-slate-400'}`}>Todos</button>
+                  <button onClick={() => setLeadFilter('individual')} className={`px-4 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${leadFilter === 'individual' ? 'bg-indigo-600 text-white' : 'text-slate-500 hover:text-slate-400'}`}>Individual</button>
+                  <button onClick={() => setLeadFilter('corporate')} className={`px-4 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${leadFilter === 'corporate' ? 'bg-orange-600 text-white' : 'text-slate-500 hover:text-slate-400'}`}>Empresa</button>
+                </div>
+
+                <div className="relative w-full md:w-64">
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                  <input type="text" placeholder="Filtrar por nome..." className="w-full bg-black/40 border border-white/10 text-white rounded-xl py-3 pl-11 pr-4 outline-none text-[10px] transition-all focus:border-indigo-500/50" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+                </div>
               </div>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in">
               {filteredLeads.map((lead) => (
                 <div key={lead.id} className="bg-slate-900 border border-white/5 rounded-[2rem] p-8 hover:bg-slate-800 transition-all flex flex-col group relative overflow-hidden">
-                  <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/5 blur-3xl rounded-full -mr-12 -mt-12 group-hover:bg-indigo-500/10 transition-all" />
+                  <div className={`absolute top-0 right-0 w-24 h-24 blur-3xl rounded-full -mr-12 -mt-12 transition-all opacity-20 ${lead.testType === 'corporate' ? 'bg-orange-500' : 'bg-indigo-500'}`} />
+                  
                   <div className="flex justify-between items-start mb-6 relative z-10">
-                    <div className={`p-3 rounded-xl transition-colors ${lead.testType === 'corporate' ? 'bg-orange-500/10 group-hover:bg-orange-500/20' : 'bg-indigo-500/10 group-hover:bg-indigo-500/20'}`}>
-                      {lead.testType === 'corporate' ? <Building2 className="w-6 h-6 text-orange-400" /> : <UserCircle className="w-6 h-6 text-indigo-400" />}
+                    <div className={`p-3 rounded-xl transition-colors ${lead.testType === 'corporate' ? 'bg-orange-500/10 text-orange-400' : 'bg-indigo-500/10 text-indigo-400'}`}>
+                      {lead.testType === 'corporate' ? <Building2 className="w-6 h-6" /> : <UserCircle className="w-6 h-6" />}
                     </div>
-                    <button onClick={() => onViewLead(lead, lead.results, lead.testId)} className="p-3 bg-white text-slate-900 rounded-xl font-black uppercase tracking-widest text-[9px] shadow-xl flex items-center gap-2 hover:bg-indigo-50 transition-all active:scale-95">Resultados <ExternalLink className="w-3 h-3" /></button>
+                    <button onClick={() => onViewLead(lead, lead.results, lead.testId)} className="p-3 bg-white text-slate-900 rounded-xl font-black uppercase tracking-widest text-[9px] shadow-xl flex items-center gap-2 hover:bg-indigo-50 transition-all active:scale-95">Relatório <ExternalLink className="w-3 h-3" /></button>
                   </div>
+
                   <h3 className="text-lg font-bold text-white mb-1 truncate relative z-10">{lead.name}</h3>
-                  <p className={`text-[10px] font-black uppercase tracking-widest mb-4 relative z-10 ${lead.testType === 'corporate' ? 'text-orange-500' : 'text-indigo-500'}`}>{lead.testType === 'corporate' ? lead.companyName : 'Individual'}</p>
-                  <div className="space-y-2 text-[11px] text-slate-400 relative z-10">
-                    <div className="flex items-center gap-2"><Mail className="w-3 h-3" /> {lead.email || 'Não informado'}</div>
-                    <div className="flex items-center gap-2"><Phone className="w-3 h-3" /> {lead.whatsapp}</div>
-                    <div className="flex items-center gap-2"><Calendar className="w-3 h-3" /> {new Date(lead.completedAt || lead.createdAt?.toDate() || Date.now()).toLocaleDateString()}</div>
+                  <div className="flex items-center gap-2 mb-4 relative z-10">
+                    <span className={`text-[8px] font-black uppercase tracking-[0.2em] px-2 py-1 rounded-md ${lead.testType === 'corporate' ? 'bg-orange-500/20 text-orange-400' : 'bg-indigo-500/20 text-indigo-400'}`}>
+                      {lead.testType === 'corporate' ? (lead.companyName || 'Empresa') : 'Individual'}
+                    </span>
+                    <span className="text-[8px] font-bold text-slate-600 uppercase tracking-widest">{lead.testId}</span>
+                  </div>
+
+                  <div className="space-y-2 mt-auto text-[11px] text-slate-400 relative z-10">
+                    <div className="flex items-center gap-2"><Mail className="w-3 h-3 opacity-50" /> {lead.email || 'N/A'}</div>
+                    <div className="flex items-center gap-2"><Phone className="w-3 h-3 opacity-50" /> {lead.whatsapp}</div>
+                    <div className="flex items-center gap-2"><Calendar className="w-3 h-3 opacity-50" /> {new Date(lead.completedAt || lead.createdAt?.toDate() || Date.now()).toLocaleDateString()}</div>
                   </div>
                 </div>
               ))}
               {filteredLeads.length === 0 && (
                 <div className="col-span-full py-20 text-center bg-white/5 rounded-[2rem] border border-dashed border-white/10">
-                   <p className="text-slate-500 font-bold text-sm uppercase tracking-widest">Nenhum registro encontrado.</p>
+                   <p className="text-slate-500 font-bold text-sm uppercase tracking-widest">Nenhum diagnóstico nesta categoria.</p>
                 </div>
               )}
             </div>
@@ -218,53 +236,32 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack, onViewLe
             <form onSubmit={handleAddCompany} className="space-y-6">
               <div>
                 <label className="text-[9px] font-black text-orange-400 uppercase tracking-[0.2em] ml-1 mb-2 block">Nome da Empresa (CAPSLOCK)</label>
-                <input 
-                  type="text" 
-                  required 
-                  placeholder="DIGITE O NOME" 
-                  className="w-full bg-black/40 border border-white/10 text-white rounded-2xl py-5 px-6 outline-none focus:ring-1 focus:ring-orange-500 transition-all uppercase font-bold text-sm" 
-                  value={newCompany.name} 
-                  onChange={(e) => setNewCompany({...newCompany, name: e.target.value.toUpperCase()})} 
-                />
+                <input type="text" required placeholder="DIGITE O NOME" className="w-full bg-black/40 border border-white/10 text-white rounded-2xl py-5 px-6 outline-none focus:ring-1 focus:ring-orange-500 transition-all uppercase font-bold text-sm" value={newCompany.name} onChange={(e) => setNewCompany({...newCompany, name: e.target.value.toUpperCase()})} />
               </div>
-
               <div>
                 <label className="text-[9px] font-black text-orange-400 uppercase tracking-[0.2em] ml-1 mb-2 block">CNPJ (Opcional)</label>
-                <input 
-                  type="text" 
-                  placeholder="00.000.000/0001-00" 
-                  className="w-full bg-black/40 border border-white/10 text-white rounded-2xl py-5 px-6 outline-none text-sm transition-all focus:border-orange-500/50" 
-                  value={newCompany.cnpj} 
-                  onChange={(e) => setNewCompany({...newCompany, cnpj: e.target.value})} 
-                />
+                <input type="text" placeholder="00.000.000/0001-00" className="w-full bg-black/40 border border-white/10 text-white rounded-2xl py-5 px-6 outline-none text-sm transition-all focus:border-orange-500/50" value={newCompany.cnpj} onChange={(e) => setNewCompany({...newCompany, cnpj: e.target.value})} />
               </div>
-
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-[9px] font-black text-orange-400 uppercase tracking-[0.2em] ml-1 block">Início (Dia/Mês)</label>
                   <div className="flex gap-2">
-                    <input type="number" required min="1" max="31" placeholder="Dia" className="w-full bg-black/40 border border-white/10 text-white rounded-xl py-4 px-4 outline-none text-center text-sm transition-all focus:border-orange-500/50" value={newCompany.startDay} onChange={(e) => setNewCompany({...newCompany, startDay: e.target.value})} />
-                    <input type="number" required min="1" max="12" placeholder="Mês" className="w-full bg-black/40 border border-white/10 text-white rounded-xl py-4 px-4 outline-none text-center text-sm transition-all focus:border-orange-500/50" value={newCompany.startMonth} onChange={(e) => setNewCompany({...newCompany, startMonth: e.target.value})} />
+                    <input type="number" required min="1" max="31" placeholder="Dia" className="w-full bg-black/40 border border-white/10 text-white rounded-xl py-4 px-4 outline-none text-center text-sm transition-all" value={newCompany.startDay} onChange={(e) => setNewCompany({...newCompany, startDay: e.target.value})} />
+                    <input type="number" required min="1" max="12" placeholder="Mês" className="w-full bg-black/40 border border-white/10 text-white rounded-xl py-4 px-4 outline-none text-center text-sm" value={newCompany.startMonth} onChange={(e) => setNewCompany({...newCompany, startMonth: e.target.value})} />
                   </div>
                 </div>
                 <div className="space-y-2">
                   <label className="text-[9px] font-black text-orange-400 uppercase tracking-[0.2em] ml-1 block">Fim (Dia/Mês)</label>
                   <div className="flex gap-2">
-                    <input type="number" required min="1" max="31" placeholder="Dia" className="w-full bg-black/40 border border-white/10 text-white rounded-xl py-4 px-4 outline-none text-center text-sm transition-all focus:border-orange-500/50" value={newCompany.endDay} onChange={(e) => setNewCompany({...newCompany, endDay: e.target.value})} />
-                    <input type="number" required min="1" max="12" placeholder="Mês" className="w-full bg-black/40 border border-white/10 text-white rounded-xl py-4 px-4 outline-none text-center text-sm transition-all focus:border-orange-500/50" value={newCompany.endMonth} onChange={(e) => setNewCompany({...newCompany, endMonth: e.target.value})} />
+                    <input type="number" required min="1" max="31" placeholder="Dia" className="w-full bg-black/40 border border-white/10 text-white rounded-xl py-4 px-4 outline-none text-center text-sm" value={newCompany.endDay} onChange={(e) => setNewCompany({...newCompany, endDay: e.target.value})} />
+                    <input type="number" required min="1" max="12" placeholder="Mês" className="w-full bg-black/40 border border-white/10 text-white rounded-xl py-4 px-4 outline-none text-center text-sm" value={newCompany.endMonth} onChange={(e) => setNewCompany({...newCompany, endMonth: e.target.value})} />
                   </div>
                 </div>
               </div>
-
               <div className="bg-orange-500/5 border border-orange-500/10 p-4 rounded-xl text-center">
                  <p className="text-[8px] font-black text-orange-400 uppercase tracking-widest">Ano Automático: 2026</p>
               </div>
-
-              <button 
-                type="submit" 
-                disabled={saving}
-                className="w-full py-5 bg-orange-600 text-white rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl shadow-orange-900/40 hover:bg-orange-500 transition-all flex items-center justify-center gap-3 disabled:opacity-50 active:scale-95"
-              >
+              <button type="submit" disabled={saving} className="w-full py-5 bg-orange-600 text-white rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl shadow-orange-900/40 hover:bg-orange-500 transition-all flex items-center justify-center gap-3 disabled:opacity-50">
                 {saving ? <Loader2 className="animate-spin w-5 h-5" /> : 'Salvar Registro'}
               </button>
             </form>

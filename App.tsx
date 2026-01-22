@@ -25,9 +25,9 @@ const App: React.FC = () => {
   const [companies, setCompanies] = useState<Company[]>([]);
   const [loadingCompanies, setLoadingCompanies] = useState(false);
   
-  const generateTestId = () => {
+  const generateTestId = (type: string) => {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    let prefix = userInfo?.testType === 'corporate' ? 'VP-' : 'IS360-';
+    let prefix = type === 'corporate' ? 'VP-' : 'IS360-';
     let result = prefix;
     for (let i = 0; i < 8; i++) {
       result += chars.charAt(Math.floor(Math.random() * chars.length));
@@ -37,7 +37,6 @@ const App: React.FC = () => {
 
   const handleLeadSubmit = (info: UserInfo) => {
     setUserInfo(info);
-    // Fluxo agora sempre vai para as conformidades primeiro
     setQuizState('disclaimer');
   };
 
@@ -64,16 +63,27 @@ const App: React.FC = () => {
 
   const processResults = async (finalAnswers: Record<number, number>) => {
     setQuizState('thank-you');
-    const newId = generateTestId();
+    const type = userInfo?.testType || 'individual';
+    const newId = generateTestId(type);
     setTestId(newId);
-    const dims = userInfo?.testType === 'corporate' ? CORPORATE_DIMENSIONS : DIMENSIONS;
+    
+    const dims = type === 'corporate' ? CORPORATE_DIMENSIONS : DIMENSIONS;
     const processed = dims.map(dim => {
       const values = currentQuestions.filter(q => q.dimensionId === dim.id).map(q => finalAnswers[q.id]);
       const avg = values.length ? values.reduce((a, b) => a + b, 0) / values.length : 3;
-      return { dimensionId: dim.id, dimensionName: dim.name, score: Math.round(((avg - 1) / 4) * 100), description: dim.description };
+      return { 
+        dimensionId: dim.id, 
+        dimensionName: dim.name, 
+        score: Math.round(((avg - 1) / 4) * 100), 
+        description: dim.description 
+      };
     });
+    
     setResults(processed);
-    if (userInfo) await saveTestResult(userInfo, processed, newId);
+    if (userInfo) {
+      await saveTestResult(userInfo, processed, newId);
+    }
+    
     setTimeout(() => setQuizState(isAdmin ? 'results' : 'final-screen'), 4000);
   };
 
@@ -83,9 +93,7 @@ const App: React.FC = () => {
     <div className={`min-h-screen h-screen bg-slate-50 font-sans text-slate-900 flex flex-col relative overflow-hidden ${isCorporate ? 'theme-corporate' : 'theme-individual'}`}>
       <main className="flex-grow w-full h-full overflow-hidden">
         {quizState === 'lead-capture' && <LeadCapture onComplete={handleLeadSubmit} onAdminLogin={() => { setIsAdmin(true); setQuizState('admin'); }} />}
-        
         {quizState === 'disclaimer' && <Disclaimer onAccept={handleDisclaimerAccept} />}
-
         {quizState === 'company-selection' && (
           <div className="min-h-screen flex items-center justify-center bg-[#070b14] p-6 animate-fade-in">
             <div className="w-full max-w-md bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[2.5rem] p-10">
@@ -100,8 +108,8 @@ const App: React.FC = () => {
                 </div>
               ) : companies.length === 0 ? (
                 <div className="text-center py-10">
-                  <p className="text-slate-400 text-sm">Nenhuma empresa com questionário ativo no momento.</p>
-                  <button onClick={() => setQuizState('lead-capture')} className="text-orange-500 font-black uppercase text-[10px] mt-4">Voltar ao Início</button>
+                  <p className="text-slate-400 text-sm">Nenhuma empresa com questionário ativo.</p>
+                  <button onClick={() => setQuizState('lead-capture')} className="text-orange-500 font-black uppercase text-[10px] mt-4">Voltar</button>
                 </div>
               ) : (
                 <div className="space-y-3 max-h-[40vh] overflow-y-auto pr-2 custom-scrollbar">
@@ -119,18 +127,17 @@ const App: React.FC = () => {
             </div>
           </div>
         )}
-
         {quizState === 'welcome' && <WelcomeWizard onComplete={() => setQuizState('intro')} />}
         {quizState === 'thank-you' && <ThankYou onContinue={() => {}} isFinal={false} />}
         {quizState === 'final-screen' && <ThankYou onContinue={() => window.location.reload()} isFinal={true} />}
-        {quizState === 'admin' && <AdminDashboard onBack={() => setQuizState('lead-capture')} onViewLead={(u, r, id) => { setUserInfo(u); setResults(r); setTestId(id); setQuizState('results'); }} />}
+        {quizState === 'admin' && <AdminDashboard onBack={() => { setIsAdmin(false); setQuizState('lead-capture'); }} onViewLead={(u, r, id) => { setUserInfo(u); setResults(r); setTestId(id); setQuizState('results'); }} />}
         {quizState === 'test' && <QuizStep question={currentQuestions[currentQuestionIndex]} currentNumber={currentQuestionIndex + 1} totalQuestions={currentQuestions.length} selectedAnswer={answers[currentQuestions[currentQuestionIndex]?.id]} onAnswer={(v) => setAnswers({...answers, [currentQuestions[currentQuestionIndex].id]: v})} onPrevious={() => setCurrentQuestionIndex(p => Math.max(0, p - 1))} onNext={() => currentQuestionIndex < currentQuestions.length - 1 ? setCurrentQuestionIndex(p => p + 1) : processResults(answers)} />}
         {quizState === 'results' && <ResultsDashboard results={results} userInfo={userInfo} testId={testId} onRestart={() => setQuizState(isAdmin ? 'admin' : 'lead-capture')} isAdmin={isAdmin} />}
         {quizState === 'intro' && (
           <div className={`h-full flex items-center justify-center p-4 ${isCorporate ? 'bg-orange-950' : 'bg-[#0f172a]'}`}>
             <div className="max-w-3xl w-full p-12 bg-white/5 backdrop-blur-xl border border-white/10 rounded-[3rem] text-center">
               <h1 className="text-5xl font-black text-white mb-6 uppercase tracking-tighter">{isCorporate ? 'VitalPulse' : 'Individual'} <span className={isCorporate ? 'text-orange-500' : 'text-indigo-500'}>360</span></h1>
-              <p className="text-slate-300 text-lg mb-10">{isCorporate ? `Avaliação de sentimentos neurocientíficos para a equipe da ${userInfo?.companyName}.` : 'Descubra seu perfil comportamental em 21 dimensões.'}</p>
+              <p className="text-slate-300 text-lg mb-10">{isCorporate ? `Avaliação estratégica para a equipe da ${userInfo?.companyName}.` : 'Descubra seu perfil comportamental em 21 dimensões.'}</p>
               <button onClick={() => { setCurrentQuestionIndex(0); setAnswers({}); setQuizState('test'); }} className={`px-12 py-5 text-white font-black rounded-2xl shadow-2xl transition-all uppercase tracking-widest text-xs ${isCorporate ? 'bg-orange-600 hover:bg-orange-500' : 'bg-indigo-600 hover:bg-indigo-500'}`}>Iniciar Diagnóstico</button>
             </div>
           </div>

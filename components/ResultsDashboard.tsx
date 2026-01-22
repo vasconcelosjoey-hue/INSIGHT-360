@@ -7,27 +7,27 @@ import {
   PolarAngleAxis, 
   PolarRadiusAxis, 
   ResponsiveContainer,
+  RadarProps,
   Tooltip
 } from 'recharts';
 import { ProcessedResult, UserInfo } from '../types';
 import { generatePsychologicalAnalysis } from '../services/geminiService';
-import { Brain, RefreshCcw, Sparkles, Printer, AlertTriangle, CheckCircle, MinusCircle, Mail, Phone, Calendar, Layers, Hash, BadgeCheck } from 'lucide-react';
+import { Brain, RefreshCcw, Sparkles, Printer, AlertTriangle, CheckCircle, MinusCircle, Mail, Phone, Calendar, Layers, Hash, BadgeCheck, ArrowLeft, Download } from 'lucide-react';
 
 interface ResultsDashboardProps {
   results: ProcessedResult[];
   userInfo: UserInfo | null;
   testId: string;
   onRestart: () => void;
+  isAdmin?: boolean;
 }
 
-export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ results, userInfo, testId, onRestart }) => {
+export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ results, userInfo, testId, onRestart, isAdmin = false }) => {
   const [aiAnalysis, setAiAnalysis] = useState<string>('');
   const [loadingAi, setLoadingAi] = useState<boolean>(false);
 
-  // Group results
   const highScores = results.filter(r => r.score >= 70).sort((a, b) => b.score - a.score);
   const lowScores = results.filter(r => r.score <= 30).sort((a, b) => a.score - b.score);
-  const midScores = results.filter(r => r.score > 30 && r.score < 70).sort((a, b) => b.score - a.score);
 
   const handleGenerateAnalysis = async () => {
     setLoadingAi(true);
@@ -37,6 +37,10 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ results, use
   };
 
   const handlePrint = () => {
+    if (!isAdmin) {
+      alert("Apenas administradores podem exportar o relatório oficial em PDF.");
+      return;
+    }
     const originalTitle = document.title;
     const safeName = userInfo?.name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '_') || 'Candidato';
     const fileName = `Relatorio_Insight360_${safeName}_${testId}`;
@@ -50,146 +54,105 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ results, use
   return (
     <div className="max-w-7xl mx-auto w-full p-4 md:p-8">
       
-      {/* --- ON SCREEN DASHBOARD --- */}
+      {/* --- DASHBOARD VISUAL --- */}
       <div className="print:hidden">
-        {/* Hero Header */}
+        {isAdmin && (
+          <button onClick={onRestart} className="mb-6 flex items-center gap-2 text-indigo-600 font-bold text-sm hover:translate-x-[-4px] transition-all bg-indigo-50 px-4 py-2 rounded-lg">
+            <ArrowLeft className="w-4 h-4" /> Voltar para Painel Admin
+          </button>
+        )}
+
         <div className="text-center mb-8 md:mb-10 animate-fade-in-up">
            <div className="inline-block mb-3 md:mb-4">
-             <div className="flex items-center gap-2 bg-indigo-600 px-3 md:px-4 py-1.5 md:py-2 rounded-full shadow-lg border border-indigo-400">
-               <BadgeCheck className="w-3.5 h-3.5 md:w-4 md:h-4 text-white" />
-               <span className="text-[10px] md:text-xs font-bold text-white uppercase tracking-wider">Relatório Premium</span>
+             <div className="flex items-center gap-2 bg-indigo-600 px-4 py-2 rounded-full shadow-lg border border-indigo-400">
+               <BadgeCheck className="w-4 h-4 text-white" />
+               <span className="text-xs font-bold text-white uppercase tracking-wider">Relatório Premium</span>
              </div>
            </div>
-          <h1 className="text-3xl md:text-5xl font-extrabold text-slate-900 mb-3 md:mb-4 tracking-tight leading-tight px-2">
+          <h1 className="text-3xl md:text-5xl font-extrabold text-slate-900 mb-3 tracking-tight">
             Relatório Insight<span className="text-indigo-600">360</span>
           </h1>
-          <div className="flex flex-col items-center justify-center gap-1 md:gap-2 px-4">
-             <p className="text-base md:text-lg text-slate-600 font-medium leading-snug">
+          <div className="flex flex-col items-center justify-center gap-2">
+             <p className="text-lg text-slate-600 font-medium">
                <strong className="text-slate-900">{userInfo?.name}</strong>
              </p>
-             <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-[11px] md:text-sm text-slate-400">
-                <span className="flex items-center gap-1"><Hash className="w-3.5 h-3.5" /> ID: <span className="text-indigo-600 font-mono font-bold">{testId}</span></span>
+             <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-1 text-xs md:text-sm text-slate-400">
+                <span className="flex items-center gap-1 font-mono"><Hash className="w-3.5 h-3.5" /> ID: <span className="text-indigo-600 font-bold">{testId}</span></span>
                 {userInfo?.email && <span className="flex items-center gap-1"><Mail className="w-3.5 h-3.5" /> {userInfo.email}</span>}
                 {userInfo?.whatsapp && <span className="flex items-center gap-1"><Phone className="w-3.5 h-3.5" /> {userInfo.whatsapp}</span>}
              </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 md:gap-8 mb-10 md:mb-12">
-          
-          {/* Chart Section */}
-          <div className="xl:col-span-7 bg-white rounded-[1.5rem] md:rounded-[2rem] shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden flex flex-col animate-slide-in-left">
-            <div className="p-5 md:p-8 border-b border-slate-50 flex justify-between items-center">
+        <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 md:gap-8 mb-10">
+          <div className="xl:col-span-7 bg-white rounded-[2rem] shadow-xl border border-slate-100 overflow-hidden flex flex-col animate-slide-in-left">
+            <div className="p-6 md:p-8 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
               <h3 className="text-lg md:text-xl font-bold text-slate-800 flex items-center gap-2">
                 <Layers className="w-5 h-5 text-indigo-500" />
-                Seu Gráfico 360°
+                Gráfico de Dimensões 360°
               </h3>
-              <span className="text-[10px] md:text-xs font-bold bg-indigo-100 text-indigo-600 px-2 md:px-3 py-1 rounded-full uppercase">Multidimensional</span>
             </div>
-            <div className="p-2 md:p-4 flex-grow flex items-center justify-center bg-slate-50/30">
-              <div className="w-full h-[320px] sm:h-[400px] md:h-[500px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <RadarChart cx="50%" cy="50%" outerRadius="75%" data={results}>
-                    <PolarGrid gridType="polygon" stroke="#cbd5e1" strokeDasharray="4 4" />
-                    <PolarAngleAxis 
-                      dataKey="dimensionName" 
-                      tick={{ fill: '#475569', fontSize: 9, fontWeight: 700 }} 
-                    />
-                    <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
-                    <Radar
-                      name="Você"
-                      dataKey="score"
-                      stroke="#4f46e5"
-                      strokeWidth={3}
-                      fill="#6366f1"
-                      fillOpacity={0.4}
-                    />
-                    <Tooltip 
-                      contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)', padding: '8px' }}
-                      itemStyle={{ color: '#1e293b', fontWeight: 'bold', fontSize: '12px' }}
-                    />
-                  </RadarChart>
-                </ResponsiveContainer>
-              </div>
+            <div className="p-4 flex-grow flex items-center justify-center min-h-[400px]">
+              <ResponsiveContainer width="100%" height={400}>
+                <RadarChart cx="50%" cy="50%" outerRadius="80%" data={results}>
+                  <PolarGrid stroke="#cbd5e1" />
+                  <PolarAngleAxis dataKey="dimensionName" tick={{ fill: '#64748b', fontSize: 10, fontWeight: 600 }} />
+                  <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
+                  <Radar
+                    name="Perfil"
+                    dataKey="score"
+                    stroke="#4f46e5"
+                    strokeWidth={3}
+                    fill="#6366f1"
+                    fillOpacity={0.5}
+                  />
+                  <Tooltip />
+                </RadarChart>
+              </ResponsiveContainer>
             </div>
           </div>
 
-          {/* AI Analysis Section */}
-          <div className="xl:col-span-5 flex flex-col gap-5 md:gap-6 animate-slide-in-right">
-            <div className="bg-gradient-to-br from-slate-900 to-indigo-950 p-6 md:p-8 rounded-[1.5rem] md:rounded-[2rem] shadow-2xl text-white relative overflow-hidden flex-grow flex flex-col border border-white/5">
-              <div className="absolute top-0 right-0 w-48 h-48 md:w-64 md:h-64 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
-              
-              <div className="relative z-10 mb-4 md:mb-6 flex items-center gap-3">
-                <div className="bg-white/10 p-2 rounded-lg backdrop-blur-md">
-                   <Sparkles className="w-5 h-5 md:w-6 md:h-6 text-amber-300" />
-                </div>
-                <h3 className="text-xl md:text-2xl font-bold tracking-tight">Análise Cognitiva IA</h3>
+          <div className="xl:col-span-5 flex flex-col gap-6 animate-slide-in-right">
+            <div className="bg-gradient-to-br from-slate-900 to-indigo-950 p-8 rounded-[2rem] shadow-2xl text-white relative overflow-hidden flex-grow flex flex-col border border-white/5">
+              <div className="relative z-10 mb-6 flex items-center gap-3">
+                <Sparkles className="w-6 h-6 text-amber-300" />
+                <h3 className="text-xl font-bold tracking-tight">Análise Estratégica IA</h3>
               </div>
-              
               <div className="relative z-10 flex-grow">
                 {!aiAnalysis ? (
-                  <div className="h-full flex flex-col items-center justify-center text-center space-y-4 md:space-y-6 py-6 md:py-8">
-                    <p className="text-slate-300 leading-relaxed text-sm md:text-base font-light">
-                      Nossa inteligência artificial analisará suas dimensões para gerar uma síntese personalizada e sugestões de carreira.
+                  <div className="h-full flex flex-col items-center justify-center text-center space-y-6 py-8">
+                    <p className="text-slate-300 text-sm font-light leading-relaxed">
+                      Sua análise personalizada está pronta para ser gerada. Nossa IA cruzará suas 21 dimensões para criar um mapa de carreira e plano de ação.
                     </p>
                     <button 
                       onClick={handleGenerateAnalysis}
                       disabled={loadingAi}
-                      className="w-full py-3.5 md:py-4 bg-white text-indigo-950 rounded-xl font-bold hover:bg-indigo-50 transition-all shadow-lg active:scale-95 disabled:opacity-70 flex items-center justify-center gap-2 text-sm md:text-base"
+                      className="w-full py-4 bg-white text-indigo-950 rounded-xl font-bold hover:bg-indigo-50 transition-all shadow-xl active:scale-95 disabled:opacity-70 flex items-center justify-center gap-2"
                     >
-                      {loadingAi ? (
-                        <>
-                          <div className="w-4 h-4 border-2 border-indigo-900 border-t-transparent rounded-full animate-spin"></div>
-                          Mapeando Oportunidades...
-                        </>
-                      ) : (
-                        <>Gerar Análise Premium <Sparkles className="w-4 h-4" /></>
-                      )}
+                      {loadingAi ? <div className="w-5 h-5 border-2 border-indigo-900 border-t-transparent rounded-full animate-spin"></div> : "Gerar Análise Premium"}
                     </button>
                   </div>
                 ) : (
-                  <div className="bg-white/10 backdrop-blur-md rounded-xl p-4 md:p-6 h-[350px] md:h-[450px] overflow-y-auto custom-scrollbar border border-white/5">
-                    <div className="prose prose-invert prose-sm max-w-none text-slate-100 whitespace-pre-line leading-relaxed italic text-xs md:text-sm">
-                      {aiAnalysis}
-                    </div>
+                  <div className="bg-white/10 backdrop-blur-md rounded-xl p-6 h-[400px] overflow-y-auto custom-scrollbar italic text-sm leading-relaxed whitespace-pre-line">
+                    {aiAnalysis}
                   </div>
                 )}
               </div>
             </div>
-            
-             <div className="bg-white p-5 md:p-6 rounded-[1.5rem] md:rounded-[2rem] shadow-lg border border-slate-100">
-                <div className="flex justify-between items-center mb-4">
-                  <h4 className="font-bold text-slate-700 text-sm md:text-base uppercase tracking-tight">Performance</h4>
-                  <div className="flex gap-1.5">
-                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-                    <span className="w-2.5 h-2.5 rounded-full bg-rose-500"></span>
-                  </div>
-                </div>
-                <div className="flex gap-3 md:gap-4 text-center">
-                    <div className="flex-1 bg-emerald-50 rounded-xl p-3 md:p-4 border border-emerald-100">
-                        <div className="text-2xl md:text-3xl font-extrabold text-emerald-700">{highScores.length}</div>
-                        <div className="text-[9px] md:text-[10px] font-bold text-emerald-600 uppercase tracking-widest mt-1">Fortes</div>
-                    </div>
-                    <div className="flex-1 bg-rose-50 rounded-xl p-3 md:p-4 border border-rose-100">
-                        <div className="text-2xl md:text-3xl font-extrabold text-rose-700">{lowScores.length}</div>
-                        <div className="text-[9px] md:text-[10px] font-bold text-rose-600 uppercase tracking-widest mt-1">Atenção</div>
-                    </div>
-                </div>
-             </div>
           </div>
         </div>
 
-        {/* Dimension Details List (Compact) */}
-        <div className="bg-white rounded-[1.5rem] md:rounded-[2rem] p-6 md:p-8 mb-10 md:mb-12 shadow-xl border border-slate-100">
-          <h3 className="text-lg md:text-xl font-bold text-slate-800 mb-6 md:mb-8 border-b border-slate-100 pb-3 md:pb-4 uppercase tracking-tight">Detalhamento Completo</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 md:gap-x-8 gap-y-4 md:gap-y-6">
+        {/* Dimension Table */}
+        <div className="bg-white rounded-[2rem] p-8 mb-12 shadow-xl border border-slate-100">
+          <h3 className="text-xl font-bold text-slate-800 mb-8 uppercase tracking-widest text-sm opacity-50">Detalhamento das 21 Dimensões</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {results.map(dim => (
               <div key={dim.dimensionId} className="group">
-                <div className="flex justify-between items-center mb-1">
-                  <span className="text-[11px] md:text-sm font-bold text-slate-700 group-hover:text-indigo-600 transition-colors uppercase tracking-tight">{dim.dimensionName}</span>
-                  <span className={`text-[11px] md:text-sm font-black ${dim.score >= 70 ? 'text-emerald-600' : dim.score <= 30 ? 'text-rose-600' : 'text-slate-500'}`}>{dim.score}%</span>
+                <div className="flex justify-between items-center mb-1.5">
+                  <span className="text-[11px] font-black text-slate-500 uppercase tracking-tighter group-hover:text-indigo-600 transition-colors">{dim.dimensionName}</span>
+                  <span className={`text-xs font-bold ${dim.score >= 70 ? 'text-emerald-600' : dim.score <= 30 ? 'text-rose-600' : 'text-slate-400'}`}>{dim.score}%</span>
                 </div>
-                <div className="w-full h-1 md:h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
                    <div 
                     className={`h-full transition-all duration-1000 ${dim.score >= 70 ? 'bg-emerald-500' : dim.score <= 30 ? 'bg-rose-500' : 'bg-indigo-400'}`}
                     style={{ width: `${dim.score}%` }}
@@ -200,135 +163,81 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ results, use
           </div>
         </div>
 
-        {/* Action Buttons */}
-        <div className="flex flex-col sm:flex-row justify-center gap-4 md:gap-6 pb-12 md:pb-20 animate-fade-in px-2">
-           <button 
-            onClick={handlePrint}
-            className="flex items-center justify-center gap-2 md:gap-3 px-8 md:px-10 py-4 bg-indigo-600 text-white rounded-2xl hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-500/30 active:scale-95 font-bold text-base md:text-lg group w-full sm:w-auto"
-          >
-            <Printer className="w-5 h-5 md:w-6 md:h-6" />
-            Salvar PDF
-            <span className="bg-white/20 px-2 py-0.5 rounded text-[10px] ml-1 uppercase">Premium</span>
-          </button>
+        {/* Actions */}
+        <div className="flex flex-col sm:flex-row justify-center gap-4 pb-20 px-4">
+           {isAdmin ? (
+             <button 
+              onClick={handlePrint}
+              className="flex items-center justify-center gap-3 px-10 py-5 bg-indigo-600 text-white rounded-2xl hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-500/30 font-bold group"
+            >
+              <Download className="w-6 h-6" />
+              Exportar Relatório Oficial (PDF)
+            </button>
+           ) : (
+             <div className="flex flex-col items-center gap-2">
+                <button 
+                  disabled
+                  className="flex items-center justify-center gap-3 px-10 py-5 bg-slate-200 text-slate-400 rounded-2xl cursor-not-allowed font-bold"
+                >
+                  <Printer className="w-6 h-6" />
+                  Salvar PDF (Apenas Admin)
+                </button>
+                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Contate o administrador para o arquivo PDF</p>
+             </div>
+           )}
 
           <button 
             onClick={onRestart}
-            className="flex items-center justify-center gap-2 md:gap-3 px-8 md:px-10 py-4 bg-white border-2 border-slate-200 text-slate-500 rounded-2xl hover:border-slate-400 hover:text-slate-700 transition-all active:scale-95 font-bold text-base md:text-lg w-full sm:w-auto"
+            className="flex items-center justify-center gap-3 px-10 py-5 bg-white border-2 border-slate-200 text-slate-500 rounded-2xl hover:border-slate-400 hover:text-slate-700 transition-all font-bold"
           >
             <RefreshCcw className="w-5 h-5" />
-            Recomeçar
+            Novo Diagnóstico
           </button>
         </div>
       </div>
 
-      {/* --- PRINT ONLY LAYOUT (A4 OPTIMIZED) --- */}
-      <div className="hidden print:block print:w-full">
-        {/* Print Header */}
-        <div className="border-b-4 border-indigo-900 pb-6 mb-8">
-           <div className="flex justify-between items-start">
-              <div className="flex items-center gap-4">
-                  <div className="bg-indigo-900 text-white p-3 rounded-lg">
-                    <Layers className="w-10 h-10" />
-                  </div>
-                  <div>
-                    <h1 className="text-4xl font-black text-slate-900 uppercase tracking-tighter">Insight<span className="text-indigo-600">360</span></h1>
-                    <p className="text-indigo-700 font-bold text-sm tracking-widest uppercase">Certificado Analítico de Perfil</p>
-                  </div>
-              </div>
-              <div className="text-right">
-                 <div className="bg-indigo-50 border border-indigo-200 px-4 py-2 rounded-lg mb-2">
-                   <span className="text-[10px] font-bold text-indigo-400 block uppercase">Código de Verificação</span>
-                   <span className="text-lg font-black text-indigo-900 font-mono tracking-widest">{testId}</span>
-                 </div>
-                 <h2 className="text-xl font-bold text-slate-800">{userInfo?.name || 'Participante'}</h2>
-              </div>
-           </div>
-           
-           <div className="mt-6 grid grid-cols-3 gap-4 border-t border-slate-100 pt-4">
-              <div className="text-[11px] text-slate-500 font-bold uppercase flex items-center gap-2">
-                 <Mail className="w-3.5 h-3.5" /> {userInfo?.email}
-              </div>
-              <div className="text-[11px] text-slate-500 font-bold uppercase flex items-center gap-2">
-                 <Phone className="w-3.5 h-3.5" /> {userInfo?.whatsapp}
-              </div>
-              <div className="text-[11px] text-slate-500 font-bold uppercase flex items-center gap-2 justify-end">
-                 <Calendar className="w-3.5 h-3.5" /> {new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}
-              </div>
-           </div>
-        </div>
-
-        {/* Print Content Grid */}
-        <div className="grid grid-cols-2 gap-10 mb-8">
-           <div className="bg-white rounded-xl p-4 border border-slate-200 flex items-center justify-center">
-             <div className="w-[350px] h-[350px]">
-                <RadarChart cx={175} cy={175} outerRadius={120} width={350} height={350} data={results}>
-                  <PolarGrid gridType="polygon" stroke="#64748b" strokeWidth={1} />
-                  <PolarAngleAxis dataKey="dimensionName" tick={{ fill: '#0f172a', fontSize: 8, fontWeight: 'bold' }} />
-                  <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
-                  <Radar name="Perfil" dataKey="score" stroke="#1e1b4b" strokeWidth={3} fill="#4f46e5" fillOpacity={0.45} />
-                </RadarChart>
-             </div>
-           </div>
-
-           <div>
-              <h3 className="text-lg font-black text-slate-900 border-b-2 border-slate-200 pb-2 mb-4 uppercase tracking-tight">Síntese de Diagnóstico</h3>
-              <p className="text-xs text-slate-600 mb-6 text-justify leading-relaxed">
-                O Inventário Insight360 é um sistema avançado de mapeamento comportamental que analisa 21 dimensões da arquitetura psicológica humana. 
-                Os resultados abaixo representam o gradiente de tendências do participante, servindo como base técnica para desenvolvimento de liderança, 
-                inteligência emocional e planejamento estratégico de carreira.
-              </p>
-              
-              <div className="bg-indigo-900 p-6 rounded-xl text-white shadow-lg">
-                 <h4 className="font-black text-indigo-300 text-xs mb-4 uppercase tracking-widest border-b border-white/10 pb-2">Top Performance (Pontos Fortes)</h4>
-                 <div className="space-y-3">
-                    {highScores.slice(0, 4).map(h => (
-                      <div key={h.dimensionId} className="flex justify-between items-center">
-                        <span className="text-sm font-bold uppercase tracking-tight">{h.dimensionName}</span>
-                        <div className="flex items-center gap-2">
-                           <div className="w-16 h-1.5 bg-white/20 rounded-full overflow-hidden">
-                              <div className="h-full bg-indigo-400" style={{ width: `${h.score}%` }} />
-                           </div>
-                           <span className="font-black text-sm">{h.score.toFixed(0)}%</span>
-                        </div>
-                      </div>
-                    ))}
-                 </div>
-              </div>
-           </div>
-        </div>
-
-        {/* Detailed Metrics Table */}
-        <div className="mb-10 break-inside-avoid">
-           <h3 className="text-base font-black text-slate-900 mb-4 border-l-4 border-indigo-600 pl-3 uppercase">Detalhamento Técnico (21 Dimensões)</h3>
-           <div className="grid grid-cols-3 gap-x-10 gap-y-2 border-t border-slate-100 pt-4">
-              {results.map(res => (
-                <div key={res.dimensionId} className="flex justify-between items-center border-b border-slate-50 py-1.5">
-                   <span className="text-[10px] font-bold text-slate-600 uppercase tracking-tight">{res.dimensionName}</span>
-                   <span className={`text-[10px] font-black ${res.score >= 70 ? 'text-emerald-700' : res.score <= 30 ? 'text-rose-700' : 'text-indigo-800'}`}>
-                     {res.score.toFixed(0)}%
-                   </span>
-                </div>
-              ))}
-           </div>
-        </div>
-
-        {/* AI Analysis Print */}
-        {aiAnalysis && (
-          <div className="border-t-4 border-slate-900 pt-6 mt-8 break-inside-avoid">
-            <h3 className="text-xl font-black text-indigo-900 mb-6 flex items-center gap-2 uppercase tracking-tighter">
-              <Sparkles className="w-6 h-6" /> Conclusão Diagnóstica IA
-            </h3>
-            <div className="prose prose-sm max-w-none text-justify text-slate-900 whitespace-pre-line columns-2 gap-10 leading-relaxed font-serif italic text-xs">
-              {aiAnalysis}
+      {/* --- PRINT LAYOUT --- */}
+      <div className="hidden print:block w-full">
+         <div className="border-b-4 border-indigo-900 pb-8 mb-10 flex justify-between items-end">
+            <div>
+               <h1 className="text-5xl font-black text-slate-900 tracking-tighter uppercase">Insight<span className="text-indigo-600">360</span></h1>
+               <p className="text-indigo-700 font-bold text-sm tracking-[0.3em] uppercase mt-2">Relatório de Perfil Psicométrico</p>
             </div>
-          </div>
-        )}
-        
-        <div className="fixed bottom-0 left-0 w-full text-center text-[9px] text-slate-400 p-6 border-t border-slate-100 bg-white">
-           Insight360 Diagnostic System • Código {testId} • Relatório Confidencial gerado para {userInfo?.name}.
-           <br />
-           <span className="font-bold text-slate-500">powered By <span className="text-indigo-600">JOI.A.</span></span> • A validade técnica deste documento pode ser consultada através do ID alfanumérico em nosso banco de dados.
-        </div>
+            <div className="text-right">
+               <p className="text-slate-400 text-[10px] font-bold uppercase mb-1">Candidato(a)</p>
+               <h2 className="text-2xl font-bold text-slate-900">{userInfo?.name}</h2>
+            </div>
+         </div>
+         {/* Conteúdo do PDF simplificado para impressão rápida */}
+         <div className="grid grid-cols-2 gap-10">
+            <div className="border border-slate-200 p-6 rounded-2xl">
+               <h3 className="font-bold text-slate-800 mb-4 border-b pb-2 uppercase text-xs">Pontuações por Dimensão</h3>
+               {results.map(r => (
+                 <div key={r.dimensionId} className="flex justify-between items-center py-1 text-[10px] border-b border-slate-50">
+                   <span className="font-medium text-slate-600 uppercase">{r.dimensionName}</span>
+                   <span className="font-bold text-indigo-700">{r.score}%</span>
+                 </div>
+               ))}
+            </div>
+            <div className="space-y-8">
+               <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200">
+                  <h3 className="font-bold text-slate-800 mb-4 uppercase text-xs">Identificação do Teste</h3>
+                  <p className="text-sm font-mono mb-1">ID: {testId}</p>
+                  <p className="text-sm">E-mail: {userInfo?.email}</p>
+                  <p className="text-sm">Data: {new Date().toLocaleDateString()}</p>
+               </div>
+               {aiAnalysis && (
+                 <div className="p-6">
+                    <h3 className="font-bold text-slate-800 mb-4 uppercase text-xs">Síntese do Perfil</h3>
+                    <p className="text-[11px] leading-relaxed italic text-slate-600">{aiAnalysis.slice(0, 1500)}...</p>
+                 </div>
+               )}
+            </div>
+         </div>
+         <div className="fixed bottom-0 left-0 w-full p-8 border-t border-slate-100 flex justify-between items-center text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+            <span>insight360 intelligence platform</span>
+            <span>Relatório Oficial Gerado pelo Administrador</span>
+         </div>
       </div>
     </div>
   );

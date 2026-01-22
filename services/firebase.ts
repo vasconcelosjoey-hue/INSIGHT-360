@@ -1,9 +1,8 @@
 
 import { initializeApp } from 'firebase/app';
-import { getFirestore, collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { getFirestore, collection, addDoc, serverTimestamp, getDocs, query, orderBy } from 'firebase/firestore';
 import { UserInfo, ProcessedResult } from '../types';
 
-// --- CONFIGURAÇÃO DO FIREBASE ---
 const firebaseConfig = {
   apiKey: "AIzaSyCkpwisB2z2W5iCY9VYU_BE4cGZ0buv4cc",
   authDomain: "insight360-ae5c7.firebaseapp.com",
@@ -13,7 +12,6 @@ const firebaseConfig = {
   appId: "1:705424550512:web:24f23eab01d722b579a2b5"
 };
 
-// Inicialização segura
 let db: any = null;
 
 try {
@@ -24,10 +22,7 @@ try {
 }
 
 export const saveTestResult = async (userInfo: UserInfo, results: ProcessedResult[], testId: string) => {
-  if (!db) {
-    console.warn("Banco de dados não inicializado corretamente.");
-    return false;
-  }
+  if (!db) return false;
 
   try {
     const simpleResults = results.map(r => ({
@@ -46,9 +41,23 @@ export const saveTestResult = async (userInfo: UserInfo, results: ProcessedResul
     });
 
     return true;
-
   } catch (e) {
-    console.error("Erro ao salvar lead no Firestore: ", e);
+    console.error("Erro ao salvar lead: ", e);
     return false;
+  }
+};
+
+export const getAllLeads = async () => {
+  if (!db) return [];
+  try {
+    const q = query(collection(db, "leads"), orderBy("createdAt", "desc"));
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+  } catch (e) {
+    console.error("Erro ao buscar leads: ", e);
+    return [];
   }
 };

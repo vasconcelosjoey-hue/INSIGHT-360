@@ -28,4 +28,15 @@ export interface UserInfo {
   whatsapp: string;
 }
 
-export type QuizState = 'lead-capture' | 'disclaimer' | 'welcome' | 'intro' | 'test' | 'manual_input' | 'import-text' | 'calculating' | 'results';
+export type QuizState = 
+  | 'lead-capture' 
+  | 'disclaimer' 
+  | 'welcome' 
+  | 'intro' 
+  | 'test' 
+  | 'manual_input' 
+  | 'import-text' 
+  | 'thank-you'
+  | 'calculating' 
+  | 'results' 
+  | 'admin';

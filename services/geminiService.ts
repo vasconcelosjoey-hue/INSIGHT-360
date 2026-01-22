@@ -9,40 +9,24 @@ export const generatePsychologicalAnalysis = async (
 ): Promise<string> => {
   try {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-    
-    const dataFormatted = results.map(r => `${r.dimensionName}: ${r.score}%`).join('\n');
+    const dataFormatted = results.map(r => `${r.dimensionName}: ${r.score}%`).join(', ');
 
-    const promptText = `
-      Você é um Especialista em Diagnóstico Psicométrico. 
-      Analise estes resultados (0 a 100%):
-      ${dataFormatted}
-      
-      FOCO DA ANÁLISE: ${customPrompt || "Gere um parecer técnico estratégico."}
-      
-      REGRAS:
-      - Responda em Português.
-      - Seja direto e profissional.
-      - Divida em tópicos curtos.
-    `;
+    const prompt = `Analise estes resultados psicométricos: ${dataFormatted}. ${customPrompt || "Forneça um diagnóstico técnico."}. Responda em Português, de forma direta e profissional, sem usar Markdown excessivo.`;
 
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: [{ parts: [{ text: promptText }] }], // Estrutura de partes mais estável
+      contents: prompt,
       config: { 
-        systemInstruction: isCorporate 
-          ? "Você é um Consultor de RH. Foque em performance de equipe e cultura." 
-          : "Você é um Psicólogo Organizacional. Foque em talentos e desenvolvimento individual.",
-        temperature: 0.7,
+        systemInstruction: "Você é um psicólogo e consultor técnico. Sua resposta deve ser lida em um relatório formal.",
+        temperature: 0.7 
       }
     });
 
-    if (!response.text) {
-      throw new Error("Resposta vazia da IA");
-    }
-
-    return response.text;
-  } catch (error: any) {
-    console.error("Falha na IA Insight360:", error);
+    const text = response.text;
+    if (!text) throw new Error("IA_EMPTY");
+    return text;
+  } catch (error) {
+    console.error("Erro Crítico Gemini:", error);
     throw error;
   }
 };

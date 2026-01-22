@@ -68,14 +68,18 @@ const App: React.FC = () => {
     setTestId(newId);
     
     const dims = type === 'corporate' ? CORPORATE_DIMENSIONS : DIMENSIONS;
-    const processed = dims.map(dim => {
-      const values = currentQuestions.filter(q => q.dimensionId === dim.id).map(q => finalAnswers[q.id]);
+    
+    // Mapeamento forçado para garantir dimensionName
+    const processed: ProcessedResult[] = dims.map(dim => {
+      const questionsOfDim = currentQuestions.filter(q => q.dimensionId === dim.id);
+      const values = questionsOfDim.map(q => finalAnswers[q.id] || 3); // Default neutro se faltar
       const avg = values.length ? values.reduce((a, b) => a + b, 0) / values.length : 3;
+      
       return { 
         dimensionId: dim.id, 
-        dimensionName: dim.name, 
+        dimensionName: dim.name || "Dimensão", 
         score: Math.round(((avg - 1) / 4) * 100), 
-        description: dim.description 
+        description: dim.description || "" 
       };
     });
     

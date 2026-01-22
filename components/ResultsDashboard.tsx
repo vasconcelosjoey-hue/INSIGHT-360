@@ -24,7 +24,6 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ results, use
   
   const analysisAreaRef = useRef<HTMLDivElement>(null);
 
-  // NORMALIZAÇÃO RESILIENTE: Garante que o gráfico e a IA leiam os nomes corretos
   const normalizedResults = useMemo(() => {
     if (!results || !Array.isArray(results)) return [];
     return results.map(r => {
@@ -45,9 +44,14 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ results, use
 
   const handleSmartAiCall = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    if (loadingAi) return;
+    if (loadingAi || (!customPrompt.trim() && !aiAnalysis)) {
+        if (!customPrompt.trim() && !aiAnalysis) {
+            // Se for a primeira chamada e não tiver prompt, gera o diagnóstico padrão
+        } else if (!customPrompt.trim()) {
+            return;
+        }
+    }
     
-    // Feedback imediato: sobe a tela para onde o texto vai aparecer
     analysisAreaRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     
     setLoadingAi(true);
@@ -56,7 +60,7 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ results, use
     try {
       const result = await generatePsychologicalAnalysis(normalizedResults, isCorporate, customPrompt);
       setAiAnalysis(result);
-      setCustomPrompt(''); // Limpa o campo após sucesso
+      setCustomPrompt(''); 
     } catch (error) {
       console.error("Erro na Smartbox:", error);
       setErrorAi(true);
@@ -76,7 +80,6 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ results, use
   return (
     <div className="w-full h-screen bg-slate-100 flex flex-col overflow-hidden print:bg-white print:overflow-visible print:h-auto print:block">
       
-      {/* HEADER FIXO */}
       <header className="flex-shrink-0 bg-white border-b border-slate-200 px-6 py-4 z-50 print:hidden shadow-sm">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <button onClick={onRestart} className="flex items-center gap-2 text-slate-500 font-bold text-xs hover:text-indigo-600 transition-colors">
@@ -94,11 +97,9 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ results, use
         </div>
       </header>
 
-      {/* ÁREA DE CONTEÚDO */}
       <div className="flex-grow overflow-y-auto print:overflow-visible print:block print:h-auto custom-scrollbar">
         <main className="max-w-6xl mx-auto p-6 md:p-10 print:p-0">
           
-          {/* PÁGINA 1: GRÁFICO E SCORES */}
           <div className="bg-white rounded-[3rem] p-10 shadow-2xl mb-10 print:shadow-none print:m-0 print:p-0 print:rounded-none print:w-full print:min-h-[29.7cm] border border-slate-100 print:border-none">
             
             <div className="text-center mb-12 print:pt-6">
@@ -113,7 +114,6 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ results, use
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
-              {/* RADAR CHART */}
               <div className="lg:col-span-7 bg-slate-50 rounded-[2.5rem] p-8 border border-slate-100 print:bg-white print:border-2 print:border-black/10">
                 <h3 className="text-[10px] font-black text-slate-400 mb-8 uppercase tracking-widest flex items-center gap-2 print:text-black">
                   <Brain className="w-4 h-4" /> Perfil Comportamental Geométrico
@@ -141,7 +141,6 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ results, use
                 </div>
               </div>
 
-              {/* LISTA DE PONTUAÇÕES */}
               <div className="lg:col-span-5 print:col-span-12">
                 <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6 print:text-black">Pontuações Analíticas</h3>
                 <div className="grid grid-cols-1 gap-2.5 print:grid-cols-3 print:gap-2">
@@ -156,13 +155,19 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ results, use
             </div>
           </div>
 
-          {/* PÁGINA 2: ÁREA DA IA */}
           <div ref={analysisAreaRef} id="print-page-2" className="print:break-before-page print:pt-10 mb-20">
             <div className="bg-white rounded-[3rem] shadow-2xl border-4 border-slate-50 print:border-2 print:border-black print:shadow-none overflow-hidden flex flex-col">
               <div className={`${themeBg} p-8 text-white print:bg-black print:text-white`}>
-                <div className="flex items-center gap-3">
-                  <Sparkles className="w-5 h-5 text-yellow-300" />
-                  <h3 className="text-xl font-black uppercase tracking-widest">Sintetização Estratégica IA</h3>
+                <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-3">
+                        <Sparkles className="w-5 h-5 text-yellow-300" />
+                        <h3 className="text-xl font-black uppercase tracking-widest">Sintetização Estratégica IA</h3>
+                    </div>
+                    {aiAnalysis && !loadingAi && (
+                        <button onClick={handleSmartAiCall} className="p-2 bg-white/10 rounded-lg hover:bg-white/20 transition-all" title="Regerar diagnóstico">
+                            <RefreshCcw className="w-4 h-4" />
+                        </button>
+                    )}
                 </div>
               </div>
 
@@ -173,7 +178,10 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ results, use
                       <Loader2 className={`w-16 h-16 animate-spin ${themeText}`} />
                       <Brain className="absolute inset-0 m-auto w-6 h-6 text-slate-300" />
                     </div>
-                    <p className="text-[11px] font-black text-slate-400 uppercase tracking-[0.4em] animate-pulse">Consultando Inteligência...</p>
+                    <div className="text-center">
+                        <p className="text-[11px] font-black text-slate-900 uppercase tracking-[0.4em] mb-1">Raciocinando...</p>
+                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Processando 21 eixos neurais</p>
+                    </div>
                   </div>
                 ) : aiAnalysis ? (
                   <div className="text-slate-900 text-base leading-relaxed whitespace-pre-line font-medium text-justify print:text-black print:text-[12pt] animate-fade-in-up">
@@ -182,7 +190,13 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ results, use
                 ) : errorAi ? (
                   <div className="flex flex-col items-center justify-center py-20 gap-4 text-rose-500">
                     <AlertCircle className="w-12 h-12" />
-                    <p className="font-black uppercase tracking-widest text-xs text-center">Não foi possível conectar à IA.<br/>Tente novamente em alguns segundos.</p>
+                    <div className="text-center">
+                        <p className="font-black uppercase tracking-widest text-xs">Falha na conexão com a IA</p>
+                        <p className="text-[10px] font-bold opacity-70 mt-1">Verifique se o ambiente possui acesso à internet ou tente novamente.</p>
+                    </div>
+                    <button onClick={handleSmartAiCall} className={`mt-4 px-6 py-2 ${themeBg} text-white rounded-xl text-[10px] font-black uppercase tracking-widest`}>
+                        Tentar reconectar
+                    </button>
                   </div>
                 ) : (
                   <div className="flex flex-col items-center justify-center py-20 opacity-30 print:hidden">
@@ -194,18 +208,17 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ results, use
                 )}
               </div>
 
-              {/* SMARTBOX FIXA NO RODAPÉ DO COMPONENTE */}
               <div className="p-10 bg-slate-50 border-t border-slate-100 print:hidden">
                 <form onSubmit={handleSmartAiCall} className="relative group">
                   <textarea 
                     value={customPrompt}
                     onChange={(e) => setCustomPrompt(e.target.value)}
-                    placeholder="Faça uma pergunta para a IA sobre estes resultados... Ex: 'Quais cargos são ideais para esse perfil?'"
+                    placeholder="Faça uma pergunta específica... Ex: 'Quais os riscos de liderança?' ou 'Como motivar essa pessoa?'"
                     className="w-full bg-white border-2 border-slate-200 rounded-[2.5rem] py-8 pl-8 pr-24 text-slate-800 outline-none focus:border-indigo-400 min-h-[160px] shadow-inner transition-all resize-none text-sm font-medium"
                   />
                   <button 
                     type="submit" 
-                    disabled={loadingAi || !customPrompt.trim()} 
+                    disabled={loadingAi || (!customPrompt.trim() && !!aiAnalysis)} 
                     className={`absolute right-4 bottom-4 p-6 ${themeBg} text-white rounded-[2rem] shadow-xl hover:scale-105 active:scale-95 disabled:opacity-30 disabled:hover:scale-100 transition-all`}
                     title="Enviar pergunta"
                   >
@@ -213,7 +226,7 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ results, use
                   </button>
                 </form>
                 <p className="mt-4 text-[9px] font-bold text-slate-400 text-center uppercase tracking-widest">
-                  Processado por Redes Neurais • Respostas baseadas nos 21 eixos
+                  Tecnologia Gemini 3 Ultra-Flash • Diagnóstico Baseado em Evidências
                 </p>
               </div>
             </div>

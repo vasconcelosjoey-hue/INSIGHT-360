@@ -8,51 +8,68 @@ export const generatePsychologicalAnalysis = async (
   customPrompt?: string
 ): Promise<string> => {
   try {
+    // Inicialização segura dentro da função para evitar chaves obsoletas
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     
-    // Filtra apenas resultados válidos para o prompt
+    // Formatação rigorosa dos dados para a IA
     const dataFormatted = results
       .filter(r => r.dimensionName && r.score !== undefined)
       .map(r => `${r.dimensionName}: ${r.score}%`)
-      .join(', ');
+      .join('\n');
 
     if (!dataFormatted) {
       throw new Error("DADOS_INSUFICIENTES");
     }
 
     const context = isCorporate 
-      ? "Este é um diagnóstico de Saúde Organizacional (VitalPulse)." 
-      : "Este é um laudo de perfil psicométrico individual (Insight360).";
+      ? "Diagnóstico de Saúde Organizacional e Clima (VitalPulse)." 
+      : "Laudo de Perfil Psicométrico e Comportamental (Insight360).";
 
-    const prompt = `
-      CONTEXTO: ${context}
-      DADOS COLETADOS: ${dataFormatted}
-      PERGUNTA DO USUÁRIO: ${customPrompt || "Gere um diagnóstico técnico completo sobre este perfil."}
+    const systemInstruction = `Você é um Especialista Sênior em Psicometria, Neurociência Comportamental e Consultoria de RH. 
+    Sua tarefa é analisar os scores de 21 dimensões e fornecer um diagnóstico clínico e profissional.
+    Não seja genérico. Use os dados fornecidos para criar correlações entre as dimensões.
+    Se o usuário fizer uma pergunta específica, foque nela, mas mantenha o embasamento técnico.
+    Responda sempre em Português (Brasil).`;
+
+    const mainPrompt = `
+      ${context}
       
-      INSTRUÇÕES:
-      1. Responda em Português do Brasil.
-      2. Seja direto, profissional e técnico (como um psicólogo ou consultor sênior).
-      3. Use parágrafos claros. Não use Markdown exagerado (evite muitos negritos ou tabelas complexas).
-      4. Identifique pontos fortes e pontos de melhoria baseados nos scores.
+      DADOS DO ENTREVISTADO:
+      ${dataFormatted}
+      
+      SOLICITAÇÃO DO USUÁRIO: 
+      "${customPrompt || "Gere um parecer técnico completo sobre este perfil, destacando riscos e potencialidades."}"
+      
+      REGRAS DE RESPOSTA:
+      - Divida em tópicos claros (ex: Carreira, Relacionamentos, Riscos).
+      - Use uma linguagem de alto nível.
+      - Se houver scores abaixo de 30%, identifique como pontos críticos de atenção.
+      - Se houver scores acima de 80%, identifique como talentos naturais.
     `;
 
+    // Chamada com Thinking Budget para raciocínio avançado
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: prompt,
+      contents: mainPrompt,
       config: { 
-        systemInstruction: "Você é um especialista em análise comportamental e neurociência. Suas respostas compõem um relatório oficial de diagnóstico.",
+        systemInstruction: systemInstruction,
         temperature: 0.7,
-        topP: 0.95
+        thinkingConfig: { thinkingBudget: 2000 } // Reserva tokens para a IA "raciocinar" o diagnóstico
       }
     });
 
     const text = response.text;
-    if (!text) throw new Error("IA_SEM_RESPOSTA");
+    if (!text) throw new Error("A IA não retornou conteúdo.");
     
     return text.trim();
   } catch (error: any) {
-    console.error("Erro Crítico no Serviço Gemini:", error);
-    if (error.message?.includes("API_KEY")) return "Erro: Chave de API inválida ou não configurada.";
-    throw error;
+    console.error("Erro no Gemini Service:", error);
+    
+    // Fallback amigável
+    if (error.message?.includes("API_KEY")) {
+      return "Erro de Configuração: A chave de acesso à Inteligência Artificial não foi detectada. Verifique as configurações do sistema.";
+    }
+    
+    throw new Error("Não foi possível gerar a análise no momento. Tente novamente.");
   }
 };

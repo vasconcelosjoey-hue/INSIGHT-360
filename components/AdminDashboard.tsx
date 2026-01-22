@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { getAllLeads, getAllCompanies, saveCompany, getCompanyAggregate } from '../services/firebase';
-import { Layers, Search, Mail, Phone, Calendar, ArrowLeft, ExternalLink, RefreshCcw, Loader2, FileText, Users, UserCircle, Building2, Plus, X, ShieldCheck, CheckCircle2 } from 'lucide-react';
+import { Layers, Search, Mail, Phone, Calendar, ArrowLeft, ExternalLink, RefreshCcw, Loader2, FileText, Users, UserCircle, Building2, Plus, X, ShieldCheck, CheckCircle2, AlertTriangle, ShieldAlert } from 'lucide-react';
 import { ProcessedResult, UserInfo, Company } from '../types';
 
 interface AdminDashboardProps {
@@ -14,6 +14,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack, onViewLe
   const [leads, setLeads] = useState<any[]>([]);
   const [companies, setCompanies] = useState<Company[]>([]);
   const [loading, setLoading] = useState(true);
+  const [errorState, setErrorState] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [saving, setSaving] = useState(false);
   
@@ -30,12 +31,18 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack, onViewLe
 
   const fetchData = async () => {
     setLoading(true);
+    setErrorState(null);
     try {
       const [lData, cData] = await Promise.all([getAllLeads(), getAllCompanies()]);
       setLeads(lData || []);
       setCompanies(cData || []);
-    } catch (e) {
+    } catch (e: any) {
       console.error("Erro ao carregar dados:", e);
+      if (e?.message?.includes('permission')) {
+        setErrorState('PERMISSION_ERROR');
+      } else {
+        setErrorState('FETCH_ERROR');
+      }
     } finally {
       setLoading(false);
     }
@@ -65,9 +72,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack, onViewLe
     } catch (error: any) {
       console.error("Erro ao salvar empresa:", error);
       if (error?.message?.includes('permission')) {
-        alert("Erro de Permissão: Certifique-se de que as Regras do Firestore estão configuradas como 'allow read, write: if true;' no console do Firebase.");
+        alert("Erro de Permissão: Você precisa alterar as 'Rules' do seu Firestore para 'allow read, write: if true;' no console do Firebase.");
       } else {
-        alert("Houve um erro ao salvar o registro. Verifique o console do navegador para detalhes.");
+        alert("Erro técnico. Verifique sua conexão ou console.");
       }
     } finally {
       setSaving(false);
@@ -116,6 +123,20 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack, onViewLe
              <Loader2 className="w-12 h-12 text-indigo-500 animate-spin" />
              <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500">Sincronizando Banco de Dados...</p>
           </div>
+        ) : errorState === 'PERMISSION_ERROR' ? (
+          <div className="flex flex-col items-center justify-center py-20 text-center max-w-xl mx-auto">
+            <div className="bg-rose-500/10 p-6 rounded-full mb-8 border border-rose-500/20">
+               <ShieldAlert className="w-16 h-16 text-rose-500" />
+            </div>
+            <h2 className="text-3xl font-black text-white mb-4 uppercase tracking-tighter">Acesso Bloqueado pelo Firebase</h2>
+            <p className="text-slate-400 text-sm leading-relaxed mb-8">
+              O banco de dados Firestore está recusando as permissões de leitura e escrita. <br /><br />
+              <strong>Como resolver:</strong> Vá ao console do Firebase > Firestore Database > Rules e altere para <code className="bg-black p-1 text-rose-400 text-xs">allow read, write: if true;</code>
+            </p>
+            <button onClick={fetchData} className="px-8 py-4 bg-white text-slate-900 rounded-2xl font-black uppercase tracking-widest text-xs flex items-center gap-2">
+              <RefreshCcw className="w-4 h-4" /> Tentar Novamente
+            </button>
+          </div>
         ) : activeTab === 'leads' ? (
           <>
             <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-10 gap-6 animate-fade-in">
@@ -154,7 +175,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack, onViewLe
           </>
         ) : (
           <>
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-10 gap-6 animate-fade-in">
+            <div className="flex justify-between items-end mb-10 animate-fade-in">
               <h2 className="text-4xl font-black text-white leading-tight">Empresas <span className="text-orange-500">VitalPulse</span></h2>
               <button onClick={() => setShowAddCompany(true)} className="bg-orange-600 hover:bg-orange-500 text-white px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-xs flex items-center gap-2 shadow-xl shadow-orange-900/20 transition-all active:scale-95"><Plus className="w-4 h-4" /> Cadastrar Empresa</button>
             </div>
@@ -178,11 +199,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack, onViewLe
                   </div>
                 </div>
               ))}
-              {companies.length === 0 && (
-                <div className="col-span-full py-20 text-center bg-white/5 rounded-[2rem] border border-dashed border-white/10">
-                   <p className="text-slate-500 font-bold text-sm uppercase tracking-widest">Nenhuma empresa cadastrada.</p>
-                </div>
-              )}
             </div>
           </>
         )}

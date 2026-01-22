@@ -15,15 +15,33 @@ export const LeadCapture: React.FC<LeadCaptureProps> = ({ onComplete }) => {
   });
   const [error, setError] = useState('');
 
+  const formatWhatsApp = (value: string) => {
+    const numbers = value.replace(/\D/g, '');
+    if (numbers.length <= 11) {
+      return numbers
+        .replace(/^(\d{2})(\d)/g, '($1) $2')
+        .replace(/(\d{5})(\d)/, '$1-$2')
+        .substring(0, 15);
+    }
+    return value.substring(0, 15);
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    let { name, value } = e.target;
+    
+    if (name === 'whatsapp') {
+      value = formatWhatsApp(value);
+    }
+    
+    setFormData({ ...formData, [name]: value });
     setError('');
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name || !formData.email || !formData.whatsapp) {
-      setError('Por favor, preencha todos os campos para continuar.');
+    // E-mail agora é opcional, validamos apenas Nome e WhatsApp
+    if (!formData.name.trim() || !formData.whatsapp.trim()) {
+      setError('Por favor, preencha seu nome e whatsapp para continuar.');
       return;
     }
     onComplete(formData);
@@ -32,20 +50,20 @@ export const LeadCapture: React.FC<LeadCaptureProps> = ({ onComplete }) => {
   return (
     <div className="min-h-screen w-full flex flex-col items-center justify-center p-4 relative overflow-hidden bg-[#0f172a]">
       
-      {/* --- NOVO HEADER SIMPLIFICADO --- */}
+      {/* Header Fixo */}
       <div className="fixed top-0 left-0 w-full bg-slate-900/80 backdrop-blur-md border-b border-white/5 z-[100] px-4 py-4 flex justify-center items-center shadow-lg animate-fade-in">
            <span className="text-white text-[10px] md:text-xs font-black tracking-[0.4em] uppercase text-center">
              Insight<span className="text-indigo-400">360</span> - Mapeamento de autoconhecimento
            </span>
       </div>
 
-      {/* Dynamic Background Elements */}
+      {/* Elementos de Fundo */}
       <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] bg-indigo-600/20 rounded-full blur-[120px] animate-pulse-slow pointer-events-none" />
       <div className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] bg-violet-600/20 rounded-full blur-[100px] animate-pulse-slow pointer-events-none" style={{ animationDelay: '1s' }} />
 
       <div className="relative z-10 w-full max-w-md animate-fade-in-up px-2 md:px-0 mt-8">
         
-        {/* Premium Animation Centerpiece */}
+        {/* Logo/Icone Central */}
         <div className="flex justify-center mb-4 md:mb-6 relative">
           <div className="relative w-16 h-16 md:w-24 md:h-24 flex items-center justify-center">
              <div className="absolute inset-0 border-2 border-indigo-500/30 rounded-full animate-spin-slow-reverse" />
@@ -65,7 +83,7 @@ export const LeadCapture: React.FC<LeadCaptureProps> = ({ onComplete }) => {
           </p>
         </div>
 
-        {/* Glassmorphism Form Card */}
+        {/* Card do Formulário */}
         <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-6 md:p-8 rounded-[1.5rem] md:rounded-3xl shadow-2xl relative">
           
           <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-indigo-500/90 text-white text-[9px] font-bold px-3 py-1 rounded-full border border-indigo-400 shadow-lg whitespace-nowrap uppercase tracking-widest">
@@ -75,7 +93,7 @@ export const LeadCapture: React.FC<LeadCaptureProps> = ({ onComplete }) => {
           <form onSubmit={handleSubmit} className="space-y-4 md:space-y-5 mt-2">
             
             <div className="group">
-              <label className="block text-[10px] md:text-xs font-medium text-indigo-200 mb-1 ml-1 uppercase tracking-wider">Nome Completo</label>
+              <label className="block text-[10px] md:text-xs font-medium text-indigo-200 mb-1 ml-1 uppercase tracking-wider">Nome Completo *</label>
               <div className="relative">
                 <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 md:w-5 md:h-5 text-slate-500" />
                 <input
@@ -84,28 +102,14 @@ export const LeadCapture: React.FC<LeadCaptureProps> = ({ onComplete }) => {
                   value={formData.name}
                   onChange={handleChange}
                   placeholder="Seu nome"
+                  required
                   className="w-full bg-slate-900/50 border border-slate-700 text-white rounded-xl py-3 md:py-3.5 pl-11 md:pl-12 pr-4 focus:ring-2 focus:ring-indigo-500/50 outline-none text-sm md:text-base placeholder:text-slate-600 transition-all"
                 />
               </div>
             </div>
 
             <div className="group">
-              <label className="block text-[10px] md:text-xs font-medium text-indigo-200 mb-1 ml-1 uppercase tracking-wider">E-mail Corporativo</label>
-              <div className="relative">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 md:w-5 md:h-5 text-slate-500" />
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  placeholder="seu@email.com"
-                  className="w-full bg-slate-900/50 border border-slate-700 text-white rounded-xl py-3 md:py-3.5 pl-11 md:pl-12 pr-4 focus:ring-2 focus:ring-indigo-500/50 outline-none text-sm md:text-base placeholder:text-slate-600 transition-all"
-                />
-              </div>
-            </div>
-
-            <div className="group">
-              <label className="block text-[10px] md:text-xs font-medium text-indigo-200 mb-1 ml-1 uppercase tracking-wider">WhatsApp</label>
+              <label className="block text-[10px] md:text-xs font-medium text-indigo-200 mb-1 ml-1 uppercase tracking-wider">WhatsApp *</label>
               <div className="relative">
                 <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 md:w-5 md:h-5 text-slate-500" />
                 <input
@@ -114,6 +118,22 @@ export const LeadCapture: React.FC<LeadCaptureProps> = ({ onComplete }) => {
                   value={formData.whatsapp}
                   onChange={handleChange}
                   placeholder="(00) 00000-0000"
+                  required
+                  className="w-full bg-slate-900/50 border border-slate-700 text-white rounded-xl py-3 md:py-3.5 pl-11 md:pl-12 pr-4 focus:ring-2 focus:ring-indigo-500/50 outline-none text-sm md:text-base placeholder:text-slate-600 transition-all"
+                />
+              </div>
+            </div>
+
+            <div className="group">
+              <label className="block text-[10px] md:text-xs font-medium text-indigo-200 mb-1 ml-1 uppercase tracking-wider">E-mail</label>
+              <div className="relative">
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 md:w-5 md:h-5 text-slate-500" />
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  placeholder="seu@email.com (opcional)"
                   className="w-full bg-slate-900/50 border border-slate-700 text-white rounded-xl py-3 md:py-3.5 pl-11 md:pl-12 pr-4 focus:ring-2 focus:ring-indigo-500/50 outline-none text-sm md:text-base placeholder:text-slate-600 transition-all"
                 />
               </div>

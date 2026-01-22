@@ -1,7 +1,7 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Question } from '../types';
-import { ChevronLeft, ChevronRight, Check } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Check, AlertCircle } from 'lucide-react';
 
 interface QuizStepProps {
   question: Question;
@@ -22,128 +22,152 @@ export const QuizStep: React.FC<QuizStepProps> = ({
   onPrevious,
   onNext
 }) => {
-  
-  // Guard clause
+  const [shake, setShake] = useState(false);
+  const [showErrorPopup, setShowErrorPopup] = useState(false);
+  const [transitioning, setTransitioning] = useState(false);
+
+  // Efeito de transição quando o número da pergunta muda
+  useEffect(() => {
+    setTransitioning(true);
+    const timer = setTimeout(() => setTransitioning(false), 400);
+    return () => clearTimeout(timer);
+  }, [currentNumber]);
+
   if (!question) return null;
 
   const options = [
-    { value: 5, label: "Concordo totalmente", color: "bg-indigo-600" },
-    { value: 4, label: "Concordo parcialmente", color: "bg-indigo-400" },
-    { value: 3, label: "Neutro / Não sei", color: "bg-slate-400" },
-    { value: 2, label: "Discordo parcialmente", color: "bg-orange-400" },
-    { value: 1, label: "Discordo totalmente", color: "bg-red-500" },
+    { value: 5, label: "Concordo totalmente" },
+    { value: 4, label: "Concordo parcialmente" },
+    { value: 3, label: "Neutro / Não sei" },
+    { value: 2, label: "Discordo parcialmente" },
+    { value: 1, label: "Discordo totalmente" },
   ];
+
+  const handleNextClick = () => {
+    if (!selectedAnswer) {
+      setShake(true);
+      setShowErrorPopup(true);
+      setTimeout(() => setShake(false), 500);
+      setTimeout(() => setShowErrorPopup(false), 3000);
+      return;
+    }
+    onNext();
+  };
 
   const isLastQuestion = currentNumber === totalQuestions;
   const progress = (currentNumber / totalQuestions) * 100;
 
   return (
-    <div className="w-full animate-fade-in pb-12">
+    <div className="h-full w-full flex flex-col bg-white overflow-hidden relative">
       
-      {/* Premium Progress Header */}
-      <div className="mb-6 md:mb-8">
-        <div className="flex justify-between items-end mb-2 px-1">
-          <span className="text-[10px] md:text-sm font-semibold text-indigo-900 tracking-wider uppercase">Progresso</span>
-          <span className="text-xl md:text-2xl font-bold text-slate-900 font-serif italic">
-            {currentNumber}<span className="text-xs md:text-sm text-slate-400 font-sans not-italic font-normal">/{totalQuestions}</span>
+      {/* Erro Popup Visual */}
+      {showErrorPopup && (
+        <div className="absolute top-20 left-1/2 -translate-x-1/2 z-[100] bg-rose-600 text-white px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-3 animate-fade-in-up border border-rose-400">
+          <AlertCircle className="w-5 h-5" />
+          <span className="font-bold text-sm tracking-tight">Escolha uma alternativa antes de prosseguir!</span>
+        </div>
+      )}
+
+      {/* Progress Header */}
+      <div className="p-4 md:px-8 pt-6 flex-shrink-0">
+        <div className="flex justify-between items-center mb-2 px-1">
+          <span className="text-[10px] font-black text-indigo-900 tracking-[0.2em] uppercase">Mapeamento 360°</span>
+          <span className="text-sm font-bold text-slate-500">
+            Questão {currentNumber} de {totalQuestions}
           </span>
         </div>
-        <div className="w-full h-2 md:h-3 bg-slate-200 rounded-full overflow-hidden shadow-inner">
+        <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
           <div 
-            className="h-full bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-600 transition-all duration-500 ease-out relative"
+            className="h-full bg-indigo-600 transition-all duration-500 ease-out"
             style={{ width: `${progress}%` }}
-          >
-            <div className="absolute inset-0 bg-white/30 animate-pulse-slow"></div>
-          </div>
+          />
         </div>
       </div>
 
-      <div className="bg-white rounded-[1.5rem] md:rounded-[2rem] shadow-xl shadow-slate-200/50 border border-white overflow-hidden relative flex flex-col transition-all">
+      {/* Main Question Area - Compact and scroll-free */}
+      <div className={`flex-grow flex flex-col justify-center px-4 md:px-12 py-2 transition-all duration-400 ${transitioning ? 'opacity-0 translate-x-10' : 'opacity-100 translate-x-0'} ${shake ? 'animate-shake' : ''}`}>
         
-        {/* Content */}
-        <div className="p-5 md:p-12 pb-24 md:pb-32">
-          
-          {/* Question Card */}
-          <div className="mb-8 md:mb-10">
-            <h3 className="text-xl md:text-3xl font-bold text-slate-800 leading-tight">
+        <div className="max-w-3xl mx-auto w-full">
+          {/* Question Text */}
+          <div className="mb-6 md:mb-10 text-center">
+            <h3 className="text-lg md:text-3xl font-extrabold text-slate-900 leading-tight">
               {question.text}
             </h3>
-            <div className="w-12 md:w-16 h-1 bg-indigo-500 mt-4 md:mt-6 rounded-full"></div>
+            <div className="w-12 h-1 bg-indigo-500 mx-auto mt-4 rounded-full opacity-50"></div>
           </div>
 
-          {/* Options Grid */}
-          <div className="flex flex-col gap-3 md:gap-4">
+          {/* Options List */}
+          <div className="grid grid-cols-1 gap-2 md:gap-3">
             {options.map((opt) => {
               const isSelected = selectedAnswer === opt.value;
               return (
-                <label 
+                <button 
                   key={opt.value} 
-                  className={`
-                    group relative flex items-center p-4 md:p-5 rounded-xl cursor-pointer transition-all duration-300 border
-                    ${isSelected 
-                      ? 'bg-indigo-50 border-indigo-300 shadow-md translate-x-1 md:translate-x-2' 
-                      : 'bg-white border-slate-100 hover:border-indigo-100 active:bg-slate-50'}
-                  `}
                   onClick={() => onAnswer(opt.value)}
+                  className={`
+                    flex items-center p-3 md:p-4 rounded-2xl transition-all duration-200 border-2 text-left
+                    ${isSelected 
+                      ? 'bg-indigo-600 border-indigo-600 text-white shadow-lg shadow-indigo-600/20' 
+                      : 'bg-white border-slate-100 hover:border-slate-200 text-slate-600'}
+                  `}
                 >
-                  {/* Custom Radio Visual */}
                   <div className={`
-                    w-6 h-6 rounded-full border-2 flex items-center justify-center mr-3 md:mr-4 transition-all flex-shrink-0
-                    ${isSelected ? 'border-indigo-600' : 'border-slate-300 group-hover:border-indigo-300'}
+                    w-5 h-5 rounded-full border-2 flex items-center justify-center mr-3 flex-shrink-0
+                    ${isSelected ? 'border-white' : 'border-slate-200'}
                   `}>
-                    <div className={`
-                      w-3 h-3 rounded-full bg-indigo-600 transition-all duration-300
-                      ${isSelected ? 'scale-100' : 'scale-0'}
-                    `} />
+                    {isSelected && <div className="w-2.5 h-2.5 rounded-full bg-white" />}
                   </div>
-
-                  <span className={`
-                    text-sm md:text-lg font-medium transition-colors leading-tight
-                    ${isSelected ? 'text-indigo-900' : 'text-slate-600 group-hover:text-slate-900'}
-                  `}>
+                  <span className="text-sm md:text-lg font-bold tracking-tight">
                     {opt.label}
                   </span>
-                  
                   {isSelected && (
-                    <Check className="absolute right-4 w-5 h-5 text-indigo-600 animate-fade-in" />
+                    <Check className="ml-auto w-4 h-4 text-white" />
                   )}
-                </label>
+                </button>
               );
             })}
           </div>
         </div>
-
-        {/* Floating Action Bar */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 md:p-6 bg-white/95 backdrop-blur-md border-t border-slate-100 flex justify-between items-center z-10">
-          <button 
-            onClick={onPrevious}
-            disabled={currentNumber === 1}
-            className={`
-              flex items-center gap-1.5 px-4 md:px-6 py-3 rounded-xl font-medium transition-all text-sm md:text-base
-              ${currentNumber === 1 
-                ? 'text-slate-300 cursor-not-allowed' 
-                : 'text-slate-500 hover:text-indigo-600 hover:bg-indigo-50'}
-            `}
-          >
-            <ChevronLeft className="w-5 h-5" />
-            <span className="">Anterior</span>
-          </button>
-
-          <button 
-            onClick={onNext}
-            className={`
-              flex items-center gap-1.5 px-6 md:px-8 py-3 rounded-xl font-bold text-white shadow-lg transition-all duration-300 active:scale-95 text-sm md:text-base
-              ${isLastQuestion
-                ? 'bg-gradient-to-r from-emerald-500 to-teal-500 shadow-emerald-500/30' 
-                : 'bg-gradient-to-r from-slate-800 to-slate-700 shadow-slate-900/20'}
-            `}
-          >
-            {isLastQuestion ? 'Concluir' : 'Próximo'}
-            <ChevronRight className="w-5 h-5" />
-          </button>
-        </div>
-
       </div>
+
+      {/* Navigation Footer - Fixed at bottom */}
+      <div className="flex-shrink-0 p-4 md:p-8 bg-slate-50/80 backdrop-blur-sm border-t border-slate-200 flex justify-between items-center z-50">
+        <button 
+          onClick={onPrevious}
+          disabled={currentNumber === 1}
+          className={`
+            flex items-center gap-1.5 px-4 py-3 rounded-xl font-bold transition-all text-xs md:text-sm uppercase tracking-widest
+            ${currentNumber === 1 
+              ? 'text-slate-300' 
+              : 'text-slate-500 hover:text-indigo-600'}
+          `}
+        >
+          <ChevronLeft className="w-4 h-4" />
+          Anterior
+        </button>
+
+        <button 
+          onClick={handleNextClick}
+          className={`
+            flex items-center gap-1.5 px-8 md:px-12 py-4 rounded-2xl font-black text-white shadow-xl transition-all duration-300 active:scale-95 text-xs md:text-sm uppercase tracking-[0.2em]
+            ${isLastQuestion
+              ? 'bg-emerald-600 shadow-emerald-600/20' 
+              : 'bg-slate-900 shadow-slate-900/20 hover:bg-black'}
+          `}
+        >
+          {isLastQuestion ? 'Finalizar' : 'Próximo'}
+          <ChevronRight className="w-4 h-4" />
+        </button>
+      </div>
+
+      <style>{`
+        @keyframes shake {
+          0%, 100% { transform: translateX(0); }
+          10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+          20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+        .animate-shake { animation: shake 0.5s ease-in-out; }
+      `}</style>
     </div>
   );
 };

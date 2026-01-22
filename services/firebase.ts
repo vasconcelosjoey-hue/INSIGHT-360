@@ -1,6 +1,6 @@
 
 import { initializeApp } from 'firebase/app';
-import { getFirestore, collection, addDoc, serverTimestamp, getDocs, query, orderBy, where, doc, getDoc } from 'firebase/firestore';
+import { getFirestore, collection, addDoc, serverTimestamp, getDocs, query, orderBy, where } from 'firebase/firestore';
 import { UserInfo, ProcessedResult, Company } from '../types';
 
 const firebaseConfig = {
@@ -12,17 +12,12 @@ const firebaseConfig = {
   appId: "1:705424550512:web:24f23eab01d722b579a2b5"
 };
 
-let db: any = null;
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
-try {
-  const app = initializeApp(firebaseConfig);
-  db = getFirestore(app);
-} catch (error) {
-  console.error("Firebase Error:", error);
-}
+export { db };
 
 export const saveCompany = async (company: Omit<Company, 'id' | 'createdAt'>) => {
-  if (!db) return null;
   const docRef = await addDoc(collection(db, "companies"), {
     ...company,
     name: company.name.toUpperCase(),
@@ -32,7 +27,6 @@ export const saveCompany = async (company: Omit<Company, 'id' | 'createdAt'>) =>
 };
 
 export const getActiveCompanies = async () => {
-  if (!db) return [];
   const now = new Date().toISOString().split('T')[0];
   const q = query(collection(db, "companies"), orderBy("name", "asc"));
   const snapshot = await getDocs(q);
@@ -42,14 +36,12 @@ export const getActiveCompanies = async () => {
 };
 
 export const getAllCompanies = async () => {
-  if (!db) return [];
   const q = query(collection(db, "companies"), orderBy("createdAt", "desc"));
   const snapshot = await getDocs(q);
   return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Company));
 };
 
 export const saveTestResult = async (userInfo: UserInfo, results: ProcessedResult[], testId: string) => {
-  if (!db) return false;
   try {
     await addDoc(collection(db, "leads"), {
       testId,
@@ -60,19 +52,18 @@ export const saveTestResult = async (userInfo: UserInfo, results: ProcessedResul
     });
     return true;
   } catch (e) {
+    console.error("Save Error:", e);
     return false;
   }
 };
 
 export const getAllLeads = async () => {
-  if (!db) return [];
   const q = query(collection(db, "leads"), orderBy("createdAt", "desc"));
   const snapshot = await getDocs(q);
   return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 };
 
 export const getCompanyAggregate = async (companyId: string) => {
-  if (!db) return null;
   const q = query(collection(db, "leads"), where("companyId", "==", companyId));
   const snapshot = await getDocs(q);
   const leads = snapshot.docs.map(d => d.data());

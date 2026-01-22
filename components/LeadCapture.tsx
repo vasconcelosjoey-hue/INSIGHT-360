@@ -23,14 +23,9 @@ export const LeadCapture: React.FC<LeadCaptureProps> = ({ onComplete, onAdminLog
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const isCorporate = formData.testType === 'corporate';
-  
-  // Cores dinâmicas para o fundo e elementos baseadas no tipo de teste
-  const bgColor = isCorporate ? 'bg-[#1a0f05]' : 'bg-[#0f0a2e]';
   const accentColor = isCorporate ? 'text-orange-500' : 'text-indigo-400';
   const buttonBg = isCorporate ? 'bg-orange-600' : 'bg-indigo-600';
-  const shadowColor = isCorporate ? 'shadow-orange-950/40' : 'shadow-indigo-950/40';
 
-  // Animação de Rede Neural no Background
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -39,7 +34,7 @@ export const LeadCapture: React.FC<LeadCaptureProps> = ({ onComplete, onAdminLog
 
     let animationFrameId: number;
     let particles: any[] = [];
-    const particleCount = 60;
+    const particleCount = 50;
 
     const resize = () => {
       canvas.width = window.innerWidth;
@@ -51,8 +46,8 @@ export const LeadCapture: React.FC<LeadCaptureProps> = ({ onComplete, onAdminLog
       constructor() {
         this.x = Math.random() * canvas.width;
         this.y = Math.random() * canvas.height;
-        this.vx = (Math.random() - 0.5) * 0.3;
-        this.vy = (Math.random() - 0.5) * 0.3;
+        this.vx = (Math.random() - 0.5) * 0.2;
+        this.vy = (Math.random() - 0.5) * 0.2;
       }
       update() {
         this.x += this.vx; this.y += this.vy;
@@ -68,19 +63,19 @@ export const LeadCapture: React.FC<LeadCaptureProps> = ({ onComplete, onAdminLog
 
     const draw = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      const dotColor = isCorporate ? 'rgba(249, 115, 22, 0.2)' : 'rgba(129, 140, 248, 0.2)';
-      const lineAlpha = isCorporate ? 'rgba(249, 115, 22,' : 'rgba(129, 140, 248,';
+      const dotColor = isCorporate ? 'rgba(249, 115, 22, 0.15)' : 'rgba(129, 140, 248, 0.15)';
+      const lineColor = isCorporate ? 'rgba(249, 115, 22, 0.05)' : 'rgba(129, 140, 248, 0.05)';
 
       particles.forEach((p, i) => {
         p.update();
         ctx.fillStyle = dotColor;
-        ctx.beginPath(); ctx.arc(p.x, p.y, 1.5, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(p.x, p.y, 1.2, 0, Math.PI * 2); ctx.fill();
 
         for (let j = i + 1; j < particles.length; j++) {
           const p2 = particles[j];
           const dist = Math.hypot(p.x - p2.x, p.y - p2.y);
-          if (dist < 200) {
-            ctx.strokeStyle = `${lineAlpha} ${0.1 - dist/2000})`;
+          if (dist < 150) {
+            ctx.strokeStyle = lineColor;
             ctx.lineWidth = 0.5;
             ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p2.x, p2.y); ctx.stroke();
           }
@@ -106,7 +101,7 @@ export const LeadCapture: React.FC<LeadCaptureProps> = ({ onComplete, onAdminLog
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name.trim() || !formData.whatsapp.trim()) {
-      setError('Por favor, preencha Nome e WhatsApp.');
+      setError('Por favor, preencha os campos obrigatórios.');
       return;
     }
     onComplete(formData);
@@ -120,103 +115,80 @@ export const LeadCapture: React.FC<LeadCaptureProps> = ({ onComplete, onAdminLog
   };
 
   return (
-    <div className={`min-h-screen w-full flex flex-col lg:flex-row ${bgColor} transition-colors duration-1000 overflow-x-hidden relative`}>
-      
-      {/* BACKGROUND CANVAS */}
-      <canvas ref={canvasRef} className="absolute inset-0 z-0 opacity-50 pointer-events-none" />
+    <div className={`min-h-screen w-full flex flex-col lg:flex-row bg-[#070b14] overflow-hidden font-sans relative`}>
+      <canvas ref={canvasRef} className="absolute inset-0 z-0 opacity-40 pointer-events-none" />
 
-      {/* LADO ESQUERDO: FORMULÁRIO */}
-      <div className="w-full lg:w-1/2 flex flex-col justify-between p-8 md:p-16 lg:p-24 relative z-10 min-h-screen">
-        
-        {/* Header Logo */}
-        <div className="mb-12">
-          <div className="flex items-center gap-3 animate-fade-in">
-             <div className={`p-2 rounded-xl bg-white/5 border border-white/10 ${isCorporate ? 'border-orange-500/30' : 'border-indigo-500/30'}`}>
-                <Layers className={`w-8 h-8 ${accentColor}`} />
-             </div>
-             <h2 className="text-xl font-black uppercase tracking-tighter text-white">Insight<span className={isCorporate ? 'text-orange-500' : 'text-indigo-400'}>360</span></h2>
-          </div>
-        </div>
-
-        {/* Form Container */}
-        <div className="max-w-md w-full animate-fade-in-up">
-          <div className="mb-10">
-            <h1 className="text-4xl md:text-5xl font-black text-white mb-3 tracking-tight">
-              {isCorporate ? 'VitalPulse' : 'Insight360'} | <span className={isCorporate ? 'text-orange-500' : 'text-indigo-400'}>Diagnóstico</span>
+      {/* COLUNA ESQUERDA: FORMULÁRIO */}
+      <div className="w-full lg:w-[45%] flex flex-col justify-center items-center p-6 md:p-12 relative z-10">
+        <div className="max-w-sm w-full animate-fade-in-up flex flex-col min-h-[600px] justify-center">
+          
+          <div className="mb-6">
+            <h1 className="text-3xl font-black text-white mb-2 tracking-tight">
+               {isCorporate ? 'VitalPulse' : 'Diagnóstico'} | <span className={accentColor}>360°</span>
             </h1>
-            <p className="text-slate-400 text-sm font-medium">Acesse sua jornada e descubra sua inteligência comportamental através da neurociência aplicada.</p>
+            <p className="text-slate-400 text-xs font-medium leading-relaxed">
+              Descubra sua inteligência comportamental através da neurociência aplicada em minutos.
+            </p>
           </div>
 
-          {/* Toggle Button */}
-          <div className="grid grid-cols-2 gap-2 mb-8 p-1.5 bg-white/5 border border-white/10 rounded-2xl">
-            <button onClick={() => setFormData({...formData, testType: 'individual'})} className={`flex items-center justify-center gap-2 py-3.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${!isCorporate ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-500 hover:text-white'}`}>
-              <UserCircle className="w-4 h-4" /> Individual
+          <div className="grid grid-cols-2 gap-2 mb-6 p-1 bg-white/5 border border-white/10 rounded-xl">
+            <button onClick={() => setFormData({...formData, testType: 'individual'})} className={`flex items-center justify-center gap-2 py-2.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${!isCorporate ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-500'}`}>
+              <UserCircle className="w-3.5 h-3.5" /> Individual
             </button>
-            <button onClick={() => setFormData({...formData, testType: 'corporate'})} className={`flex items-center justify-center gap-2 py-3.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${isCorporate ? 'bg-orange-600 text-white shadow-lg' : 'text-slate-500 hover:text-white'}`}>
-              <Users className="w-4 h-4" /> Corporativo
+            <button onClick={() => setFormData({...formData, testType: 'corporate'})} className={`flex items-center justify-center gap-2 py-2.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${isCorporate ? 'bg-orange-600 text-white shadow-lg' : 'text-slate-500'}`}>
+              <Users className="w-3.5 h-3.5" /> Corporativo
             </button>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-1">
-               <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Usuário / Nome Completo</label>
-               <input type="text" name="name" value={formData.name} onChange={handleChange} placeholder="Digite seu nome completo" required className="w-full bg-white/5 border border-white/10 rounded-xl py-4 px-5 text-white outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all text-sm" />
+               <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1">Nome Completo</label>
+               <input type="text" name="name" value={formData.name} onChange={handleChange} placeholder="Digite seu nome" required className="w-full bg-white/5 border border-white/10 rounded-lg py-3 px-4 text-white outline-none focus:ring-1 focus:ring-indigo-500/50 transition-all text-xs" />
             </div>
 
             <div className="space-y-1">
-               <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">WhatsApp</label>
-               <input type="tel" name="whatsapp" value={formData.whatsapp} onChange={handleChange} placeholder="(00) 00000-0000" required className="w-full bg-white/5 border border-white/10 rounded-xl py-4 px-5 text-white outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all text-sm" />
+               <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1">WhatsApp</label>
+               <input type="tel" name="whatsapp" value={formData.whatsapp} onChange={handleChange} placeholder="(00) 00000-0000" required className="w-full bg-white/5 border border-white/10 rounded-lg py-3 px-4 text-white outline-none focus:ring-1 focus:ring-indigo-500/50 transition-all text-xs" />
             </div>
 
             <div className="space-y-1">
-               <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">E-mail Corporativo (Opcional)</label>
-               <input type="email" name="email" value={formData.email} onChange={handleChange} placeholder="seu@email.com" className="w-full bg-white/5 border border-white/10 rounded-xl py-4 px-5 text-white outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all text-sm" />
+               <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1">E-mail (Opcional)</label>
+               <input type="email" name="email" value={formData.email} onChange={handleChange} placeholder="seu@email.com" className="w-full bg-white/5 border border-white/10 rounded-lg py-3 px-4 text-white outline-none focus:ring-1 focus:ring-indigo-500/50 transition-all text-xs" />
             </div>
 
-            {error && <p className="text-rose-500 text-[10px] font-bold text-center bg-rose-500/10 p-2 rounded-lg">{error}</p>}
+            {error && <p className="text-rose-500 text-[9px] font-bold text-center bg-rose-500/10 py-2 rounded-lg">{error}</p>}
 
-            <button type="submit" className={`w-full py-5 text-white font-black rounded-xl shadow-2xl hover:scale-[1.02] active:scale-95 transition-all uppercase tracking-widest text-xs mt-4 flex items-center justify-center gap-2 ${buttonBg} ${shadowColor}`}>
-              Entrar <ArrowRight className="w-4 h-4" />
+            <button type="submit" className={`w-full py-4 text-white font-black rounded-lg shadow-xl hover:scale-[1.01] active:scale-95 transition-all uppercase tracking-widest text-[10px] flex items-center justify-center gap-2 ${buttonBg}`}>
+              Entrar na Jornada <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </form>
-        </div>
 
-        {/* Footer info - Ajustado para garantir visibilidade */}
-        <div className="mt-12 flex flex-col md:flex-row items-center justify-between text-[10px] font-black uppercase tracking-widest text-slate-600 gap-4 border-t border-white/5 pt-8">
-           <button onClick={() => setIsLoginOpen(true)} className="hover:text-slate-300 transition-colors flex items-center gap-2"><Lock className="w-3 h-3" /> Acesso Administrativo</button>
-           <div className="flex items-center gap-4">
-              <p>Powered By JOI.A.</p>
-              <div className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Sistema Seguro</div>
-           </div>
+          {/* Footer Alinhado */}
+          <div className="mt-8 flex items-center justify-between text-[8px] font-black uppercase tracking-widest text-slate-700 border-t border-white/5 pt-6">
+             <button onClick={() => setIsLoginOpen(true)} className="hover:text-slate-400 transition-colors flex items-center gap-1.5"><Lock className="w-2.5 h-2.5" /> Administração</button>
+             <p>Powered By JOI.A.</p>
+          </div>
         </div>
       </div>
 
-      {/* LADO DIREITO: INTERATIVO (COMPASSO STYLE) */}
-      <div className="hidden lg:flex flex-1 relative items-center justify-center p-12 bg-black/10">
+      {/* COLUNA DIREITA: BRANDING (CENTRALIZADO) */}
+      <div className={`hidden lg:flex lg:w-[55%] relative items-center justify-center border-l border-white/5 bg-black/20`}>
         <div className="relative flex flex-col items-center">
           
           <div className="relative group">
-            {/* EFEITO DE BRILHO AO FUNDO */}
-            <div className={`absolute inset-0 blur-[120px] opacity-30 rounded-full animate-pulse-slow transition-colors duration-1000 ${isCorporate ? 'bg-orange-500' : 'bg-indigo-500'}`} />
-            
-            {/* ANÉIS ORBITAIS DINÂMICOS */}
-            <div className="absolute -inset-12 border border-white/10 rounded-full animate-spin-slow-reverse" />
-            <div className="absolute -inset-24 border border-dashed border-white/5 rounded-full animate-spin-slow" />
-            <div className="absolute -inset-36 border border-white/5 rounded-full opacity-20" />
+            <div className={`absolute inset-0 blur-[100px] opacity-20 rounded-full animate-pulse-slow transition-colors duration-1000 ${isCorporate ? 'bg-orange-500' : 'bg-indigo-500'}`} />
+            <div className="absolute -inset-10 border border-white/10 rounded-full animate-spin-slow-reverse" />
+            <div className="absolute -inset-20 border border-dashed border-white/5 rounded-full animate-spin-slow opacity-30" />
 
-            {/* LOGO CENTRALIZADA (FLUTUANTE) */}
-            <div className="w-72 h-72 bg-white rounded-full shadow-[0_40px_80px_rgba(0,0,0,0.6)] flex items-center justify-center relative z-10 animate-bounce-slow transition-transform hover:scale-105 duration-700">
-               <Layers className={`w-32 h-32 ${isCorporate ? 'text-orange-500' : 'text-indigo-600'}`} />
-               
-               {/* Reflexo */}
-               <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/30 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+            {/* LOGO CENTRAL */}
+            <div className="w-56 h-56 bg-white rounded-full shadow-[0_40px_80px_rgba(0,0,0,0.6)] flex items-center justify-center relative z-10 hover:scale-105 transition-transform duration-700">
+               <Layers className={`w-24 h-24 ${isCorporate ? 'text-orange-500' : 'text-indigo-600'}`} />
             </div>
           </div>
           
-          <div className="mt-24 text-center space-y-3 animate-fade-in">
-            <h3 className="text-3xl font-black text-white tracking-tight uppercase">Mapeamento Geométrico</h3>
-            <div className={`h-1 w-16 mx-auto rounded-full ${isCorporate ? 'bg-orange-500' : 'bg-indigo-500'}`} />
-            <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.5em] mt-2">Neurociência & Comportamento 360</p>
+          <div className="mt-12 text-center space-y-2 animate-fade-in">
+            <h3 className="text-3xl font-black text-white tracking-tighter uppercase leading-none">Insight<span className={isCorporate ? 'text-orange-500' : 'text-indigo-400'}>360</span></h3>
+            <p className="text-slate-500 text-[9px] font-black uppercase tracking-[0.4em]">Neurociência & Comportamento</p>
           </div>
         </div>
       </div>
@@ -224,32 +196,30 @@ export const LeadCapture: React.FC<LeadCaptureProps> = ({ onComplete, onAdminLog
       {/* MODAL ADM */}
       {isLoginOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-950/95 backdrop-blur-xl">
-          <div className="w-full max-w-sm bg-slate-900 border border-white/10 rounded-[3rem] p-10 relative">
-            <button onClick={() => setIsLoginOpen(false)} className="absolute top-8 right-8 p-2 text-slate-500 hover:text-white"><X className="w-6 h-6" /></button>
-            <div className="flex flex-col items-center mb-8">
-               <div className="p-5 bg-indigo-500/10 rounded-2xl mb-4 border border-indigo-500/20"><Lock className="w-8 h-8 text-indigo-400" /></div>
-               <h3 className="text-xl font-black text-white uppercase tracking-widest">Acesso Restrito</h3>
+          <div className="w-full max-w-xs bg-slate-900 border border-white/10 rounded-3xl p-8 relative">
+            <button onClick={() => setIsLoginOpen(false)} className="absolute top-6 right-6 p-2 text-slate-500 hover:text-white transition-colors"><X className="w-5 h-5" /></button>
+            <div className="flex flex-col items-center mb-6">
+               <div className="p-4 bg-white/5 rounded-xl mb-3"><Lock className="w-6 h-6 text-indigo-400" /></div>
+               <h3 className="text-sm font-black text-white uppercase tracking-widest">Acesso Restrito</h3>
             </div>
-            <form onSubmit={handleAdmSubmit} className="space-y-4">
-              <input type="text" placeholder="ID Usuário" value={admUser} onChange={(e) => setAdmUser(e.target.value)} className="w-full py-4 px-6 bg-black/40 border border-white/10 rounded-xl text-white text-sm outline-none focus:ring-2 focus:ring-indigo-500/50" />
-              <input type="password" placeholder="Password" value={admPass} onChange={(e) => setAdmPass(e.target.value)} className="w-full py-4 px-6 bg-black/40 border border-white/10 rounded-xl text-white text-sm outline-none focus:ring-2 focus:ring-indigo-500/50" />
-              {loginError && <p className="text-rose-500 text-[9px] font-black text-center uppercase tracking-widest">{loginError}</p>}
-              <button type="submit" className="w-full py-4 bg-white text-slate-900 rounded-xl font-black uppercase tracking-widest text-[10px] shadow-xl hover:bg-slate-200">Validar Identidade</button>
+            <form onSubmit={handleAdmSubmit} className="space-y-3">
+              <input type="text" placeholder="Usuário" value={admUser} onChange={(e) => setAdmUser(e.target.value)} className="w-full py-3 px-4 bg-black/40 border border-white/10 rounded-lg text-white text-xs outline-none focus:ring-1 focus:ring-indigo-500/50" />
+              <input type="password" placeholder="Senha" value={admPass} onChange={(e) => setAdmPass(e.target.value)} className="w-full py-3 px-4 bg-black/40 border border-white/10 rounded-lg text-white text-xs outline-none focus:ring-1 focus:ring-indigo-500/50" />
+              {loginError && <p className="text-rose-500 text-[8px] font-black text-center uppercase">{loginError}</p>}
+              <button type="submit" className="w-full py-3 bg-white text-slate-900 rounded-lg font-black uppercase tracking-widest text-[9px] hover:bg-slate-200 transition-all">Entrar</button>
             </form>
           </div>
         </div>
       )}
 
       <style>{`
-        .animate-spin-slow { animation: spin 25s linear infinite; }
-        .animate-spin-slow-reverse { animation: spin 40s linear infinite reverse; }
+        .animate-spin-slow { animation: spin 20s linear infinite; }
+        .animate-spin-slow-reverse { animation: spin 25s linear infinite reverse; }
         .animate-pulse-slow { animation: pulseGlow 4s ease-in-out infinite; }
-        .animate-bounce-slow { animation: float 6s ease-in-out infinite; }
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        @keyframes pulseGlow { 0%, 100% { opacity: 0.15; transform: scale(1); } 50% { opacity: 0.4; transform: scale(1.15); } }
-        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
-        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        .animate-fade-in-up { animation: fadeInUp 0.8s ease-out forwards; }
+        @keyframes pulseGlow { 0%, 100% { opacity: 0.1; transform: scale(1); } 50% { opacity: 0.25; transform: scale(1.1); } }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade-in-up { animation: fadeInUp 0.6s ease-out forwards; }
       `}</style>
     </div>
   );

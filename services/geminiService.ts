@@ -8,43 +8,35 @@ export const generatePsychologicalAnalysis = async (
   customPrompt?: string
 ): Promise<string> => {
   try {
-    // Inicialização segura conforme documentação técnica
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     
-    // Preparação dos dados: transforma o array de resultados em uma string legível para a IA
-    const dataString = results.map(r => `- ${r.dimensionName}: ${r.score}%`).join('\n');
+    // Formatação ultra-simplificada para evitar sobrecarga de tokens
+    const dataTable = results.map(r => `${r.dimensionName}: ${r.score}%`).join(' | ');
 
     const systemInstruction = isCorporate 
-      ? "Você é um Consultor de RH e Saúde Organizacional experiente. Analise os scores de uma equipe e forneça diagnóstico e plano de ação."
-      : "Você é um Psicólogo Clínico e Organizacional. Analise os scores individuais e forneça um parecer técnico e PDI.";
+      ? "Você é um Consultor de RH Sênior. Analise os scores da equipe e forneça um parecer técnico focado em saúde organizacional e produtividade."
+      : "Você é um Psicólogo Organizacional. Analise o perfil individual e forneça um parecer técnico focado em desenvolvimento e carreira.";
 
-    const fullPrompt = `
-      CONTEXTO: Relatório de Diagnóstico Comportamental Insight360.
-      TIPO: ${isCorporate ? 'CORPORATIVO/EQUIPE' : 'INDIVIDUAL'}
+    const prompt = `
+      DADOS: ${dataTable}
+      PERGUNTA DO CONSULTOR: ${customPrompt || "Gere uma síntese estratégica dos resultados."}
       
-      DADOS OBTIDOS (SCORES):
-      ${dataString}
-      
-      PEDIDO ADICIONAL DO CONSULTOR:
-      ${customPrompt || "Gere um parecer técnico completo com análise de pontos fortes, pontos de risco e sugestões de desenvolvimento."}
-      
-      IMPORTANTE: Responda em Português, de forma executiva, técnica e profissional.
+      INSTRUÇÃO: Responda em Português, seja direto, técnico e profissional. Limite-se a 300 palavras.
     `;
 
     const response = await ai.models.generateContent({
       model: 'gemini-3-pro-preview',
-      contents: fullPrompt,
+      contents: prompt,
       config: { 
         systemInstruction,
-        temperature: 0.7,
-        thinkingConfig: { thinkingBudget: 2000 }
+        temperature: 0.5,
+        thinkingConfig: { thinkingBudget: 1000 } // Orçamento reduzido para maior velocidade
       }
     });
 
-    // Acessa a propriedade .text diretamente conforme as regras da SDK
-    return response.text || "Análise processada com sucesso. Nenhuma observação adicional.";
+    return response.text || "Análise concluída com sucesso.";
   } catch (error: any) {
-    console.error("Falha Crítica Gemini:", error);
-    return "O sistema de IA está processando muitos dados agora. Por favor, clique no botão de enviar novamente em alguns segundos.";
+    console.error("Gemini Error:", error);
+    return "Ocorreu um erro na conexão com a IA. Por favor, tente enviar sua pergunta novamente.";
   }
 };

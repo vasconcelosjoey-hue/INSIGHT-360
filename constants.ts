@@ -2,109 +2,156 @@
 import { Dimension, Question } from './types';
 
 export const DIMENSIONS: Dimension[] = [
-  { id: 'autodirecionamento', name: 'Autodirecionamento', description: 'Capacidade de assumir responsabilidade pela própria vida e escolhas.' },
-  { id: 'empatia', name: 'Empatia', description: 'Capacidade de se colocar no lugar do outro e sentir compaixão.' },
-  { id: 'autoconfianca', name: 'Autoconfiança', description: 'Segurança nas próprias habilidades para resolver problemas.' },
-  { id: 'independencia', name: 'Independência', description: 'Autonomia emocional em relação à aprovação alheia.' },
-  { id: 'flexibilidade', name: 'Flexibilidade Moral', description: 'Adaptação a regras e convenções versus pragmatismo.' },
-  { id: 'procrastinacao', name: 'Procrastinação', description: 'Tendência a adiar tarefas e gestão do tempo.' },
-  { id: 'inibicao', name: 'Inibição Social', description: 'Timidez e insegurança em interações sociais.' },
-  { id: 'persistencia', name: 'Persistência', description: 'Constância em objetivos difíceis e resiliência.' },
-  { id: 'auto_aceitacao', name: 'Auto-aceitação', description: 'Visão sobre as próprias qualidades e limitações.' },
-  { id: 'reflexao', name: 'Reflexão', description: 'Análise racional versus intuição na tomada de decisão.' },
-  { id: 'otimismo', name: 'Otimismo', description: 'Tendência a ver o lado positivo e confiar no futuro.' },
-  { id: 'incerteza', name: 'Medo da Incerteza', description: 'Necessidade de segurança, rotina e aversão ao risco.' },
-  { id: 'extravagancia', name: 'Extravagância', description: 'Busca por atenção, expressividade e reconhecimento.' },
-  { id: 'conquista', name: 'Nec. de Conquista', description: 'Ambição, competitividade e foco no sucesso profissional.' },
-  { id: 'ordem', name: 'Ordem', description: 'Apreço por regras, hierarquia e organização.' },
-  { id: 'ideais', name: 'Ideais', description: 'Defesa de valores, crenças e sacrifício por causas.' },
-  { id: 'altruismo', name: 'Altruísmo', description: 'Disposição para ajudar, cooperar e filantropia.' },
-  { id: 'sentimentalismo', name: 'Sentimentalismo', description: 'Sensibilidade emocional e tomada de decisão pelo coração.' },
-  { id: 'frater', name: 'Frater', description: 'Sociabilidade, confiança nas pessoas e facilidade em fazer amigos.' },
-  { id: 'identificacao', name: 'Ident. Transpessoal', description: 'Senso de conexão com grupos, o todo ou o universo.' },
-  { id: 'espiritualidade', name: 'Espiritualidade', description: 'Crença no transcendente e papel espiritual.' },
+  { id: 'autodirecionamento', name: 'Autodirecionamento', description: 'Responsabilidade e agência.' },
+  { id: 'empatia', name: 'Empatia', description: 'Conexão emocional.' },
+  { id: 'autoconfianca', name: 'Autoconfiança', description: 'Segurança interna.' },
+  { id: 'independencia', name: 'Independência', description: 'Autonomia emocional.' },
+  { id: 'flexibilidade', name: 'Flexibilidade Moral', description: 'Adaptação e pragmatismo.' },
+  { id: 'procrastinacao', name: 'Procrastinação', description: 'Gestão de tarefas.' },
+  { id: 'inibicao', name: 'Inibição Social', description: 'Comportamento em grupo.' },
+  { id: 'persistencia', name: 'Persistência', description: 'Resiliência e foco.' },
+  { id: 'auto_aceitacao', name: 'Auto-aceitação', description: 'Visão de si.' },
+  { id: 'reflexao', name: 'Reflexão', description: 'Lógica vs Intuição.' },
+  { id: 'otimismo', name: 'Otimismo', description: 'Visão de futuro.' },
+  { id: 'incerteza', name: 'Medo da Incerteza', description: 'Aversão ao risco.' },
+  { id: 'extravagancia', name: 'Extravagância', description: 'Busca por atenção.' },
+  { id: 'conquista', name: 'Nec. de Conquista', description: 'Ambição.' },
+  { id: 'ordem', name: 'Ordem', description: 'Hierarquia e regras.' },
+  { id: 'ideais', name: 'Ideais', description: 'Valores e causas.' },
+  { id: 'altruismo', name: 'Altruísmo', description: 'Ajuda ao próximo.' },
+  { id: 'sentimentalismo', name: 'Sentimentalismo', description: 'Emoção na decisão.' },
+  { id: 'frater', name: 'Frater', description: 'Sociabilidade e confiança.' },
+  { id: 'identificacao', name: 'Ident. Transpessoal', description: 'Senso de unidade.' },
+  { id: 'espiritualidade', name: 'Espiritualidade', description: 'Senso de propósito.' },
 ];
 
-const COMPACT_QUESTIONS_LIST = [
-  // Autodirecionamento
+export const CORPORATE_DIMENSIONS: Dimension[] = [
+  { id: 'engajamento', name: 'Engajamento', description: 'Energia e dedicação ao trabalho.' },
+  { id: 'pertencimento', name: 'Pertencimento', description: 'Sentir-se parte essencial da equipe.' },
+  { id: 'seguranca', name: 'Segurança Psicológica', description: 'Liberdade para errar e opinar.' },
+  { id: 'proposito', name: 'Propósito', description: 'Conexão entre valores pessoais e da empresa.' },
+  { id: 'colaboracao', name: 'Colaboração', description: 'Sinergia e auxílio mútuo entre pares.' },
+  { id: 'burnout', name: 'Risco de Burnout', description: 'Esgotamento físico e mental.' },
+  { id: 'estresse', name: 'Estresse Crônico', description: 'Nível de tensão diária acumulada.' },
+  { id: 'isolamento', name: 'Isolamento', description: 'Sentimento de desconexão social no trabalho.' },
+  { id: 'frustracao', name: 'Frustração', description: 'Sentimento de estagnação ou injustiça.' },
+  { id: 'clima', name: 'Clima Geral', description: 'Percepção da atmosfera organizacional.' },
+];
+
+const INDIVIDUAL_QUESTIONS = [
   "Eu sinto que sou o único responsável pelas direções que minha vida toma.",
-  "As escolhas que faço hoje determinam meu sucesso futuro, independente de sorte.",
-  // Empatia
-  "Consigo perceber e sentir o desconforto de alguém antes mesmo da pessoa falar.",
-  "Tenho facilidade em me colocar no lugar do outro para entender suas motivações.",
-  // Autoconfiança
-  "Acredito firmemente que tenho as habilidades necessárias para superar qualquer desafio.",
-  "Diante de uma situação nova e complexa, confio plenamente na minha capacidade de resolvê-la.",
-  // Independência
-  "Tomo decisões importantes baseadas nas minhas convicções, mesmo que outros discordem.",
-  "Não sinto necessidade de buscar aprovação constante das pessoas para me sentir validado.",
-  // Flexibilidade
-  "Acredito que as regras podem ser flexibilizadas se o resultado final for mais importante.",
-  "Em certas situações, é necessário ser pragmático e ignorar convenções para atingir o objetivo.",
-  // Procrastinação
-  "Tenho o hábito de adiar tarefas que considero chatas ou difíceis até o último momento.",
-  "Muitas vezes perco o foco em obrigações importantes por causa de distrações momentâneas.",
-  // Inibição Social
-  "Em reuniões com pessoas desconhecidas, costumo ficar em silêncio e evitar chamar atenção.",
-  "Sinto uma certa ansiedade ou timidez quando preciso expressar minha opinião em público.",
-  // Persistência
-  "Sou capaz de manter o esforço em um projeto por meses, mesmo sem ver resultados imediatos.",
-  "Desistir não é uma opção para mim, mesmo quando todos dizem que é impossível.",
-  // Auto-aceitação
-  "Lido bem com meus erros e não me martirizo por não ser perfeito em tudo.",
-  "Aceito minhas vulnerabilidades como parte natural do meu crescimento como ser humano.",
-  // Reflexão
-  "Sempre analiso todos os prós e contras exaustivamente antes de tomar uma decisão.",
-  "Prefiro a lógica e os dados concretos à intuição na hora de planejar meus passos.",
-  // Otimismo
-  "Acredito que, não importa quão difícil seja a situação, algo bom sairá dela.",
-  "Vejo o futuro com entusiasmo e espero que grandes coisas aconteçam na minha vida.",
-  // Medo da Incerteza
-  "Sinto um grande desconforto quando não sei exatamente o que vai acontecer a seguir.",
-  "Prefiro manter rotinas previsíveis a me arriscar em situações totalmente novas.",
-  // Extravagância
-  "Gosto de me expressar de forma marcante e de ser reconhecido pelo meu estilo ou ideias.",
-  "Sinto-me energizado quando sou o centro das atenções em um ambiente social ou profissional.",
-  // Conquista
-  "O sucesso profissional e o reconhecimento financeiro são meus principais motores de vida.",
-  "Sou altamente competitivo e busco sempre estar entre os melhores naquilo que faço.",
-  // Ordem
-  "Para mim, a disciplina e o respeito à hierarquia são fundamentais para qualquer sociedade.",
-  "Mantenho meus pertences e minha agenda rigorosamente organizados e planejados.",
-  // Ideais
-  "Estou disposto a fazer grandes sacrifícios pessoais por uma causa em que acredito.",
-  "Meus valores éticos são inegociáveis, mesmo que isso me traga prejuízos imediatos.",
-  // Altruísmo
-  "Frequentemente ajudo pessoas sem esperar absolutamente nada em troca, nem mesmo um obrigado.",
-  "Priorizo o bem-estar coletivo sobre meus interesses individuais em projetos de equipe.",
-  // Sentimentalismo
-  "Sou facilmente tocado por demonstrações de afeto e me emociono com frequência.",
-  "Minhas emoções costumam ter um peso maior do que a lógica pura nas minhas relações.",
-  // Frater
-  "Confio na bondade inerente das pessoas até que me provem o contrário.",
-  "Tenho facilidade em estabelecer vínculos profundos de amizade em pouco tempo.",
-  // Identificação
-  "Sinto que minhas ações individuais impactam o mundo como um todo de forma conectada.",
-  "Tenho um forte senso de pertencimento a comunidades que compartilham meus propósitos.",
-  // Espiritualidade
-  "Acredito que existe uma dimensão espiritual ou transcendente que guia nossa existência.",
-  "Sinto que minha vida tem um propósito sagrado ou uma missão que vai além do material."
+  "As escolhas que faço hoje determinam meu sucesso futuro.",
+  "Consigo perceber o desconforto de alguém antes mesmo da pessoa falar.",
+  "Tenho facilidade em me colocar no lugar do outro.",
+  "Acredito que tenho as habilidades para superar qualquer desafio.",
+  "Confio plenamente na minha capacidade de resolver situações novas.",
+  "Tomo decisões baseadas nas minhas convicções, mesmo sob discordância.",
+  "Não busco aprovação constante para me sentir validado.",
+  "Acredito que regras podem ser flexibilizadas pelo resultado.",
+  "É necessário ser pragmático para atingir objetivos difíceis.",
+  "Tenho o hábito de adiar tarefas que considero chatas.",
+  "Perco o foco com frequência por causa de distrações.",
+  "Em reuniões, costumo ficar em silêncio e evitar atenção.",
+  "Sinto ansiedade quando preciso falar em público.",
+  "Mantenho o esforço em projetos longos sem resultados imediatos.",
+  "Desistir não é uma opção, mesmo sob pressão.",
+  "Lido bem com meus erros e não me martirizo.",
+  "Aceito minhas vulnerabilidades como parte do crescimento.",
+  "Analiso prós e contras exaustivamente antes de decidir.",
+  "Prefiro lógica e dados à intuição pura.",
+  "Acredito que algo bom sempre sairá de situações difíceis.",
+  "Vejo o futuro com entusiasmo e esperança.",
+  "Sinto desconforto quando não sei o que vai acontecer.",
+  "Prefiro rotinas previsíveis a riscos novos.",
+  "Gosto de me expressar de forma marcante e ser reconhecido.",
+  "Sinto-me energizado sendo o centro das atenções.",
+  "Sucesso e reconhecimento financeiro são meus motores.",
+  "Sou altamente competitivo e busco ser o melhor.",
+  "Disciplina e respeito à hierarquia são fundamentais.",
+  "Mantenho meus pertences e agenda rigorosamente organizados.",
+  "Estou disposto a sacrifícios por causas em que acredito.",
+  "Meus valores éticos são inegociáveis.",
+  "Ajudo pessoas sem esperar nada em troca.",
+  "Priorizo o bem coletivo sobre interesses individuais.",
+  "Sou facilmente tocado por demonstrações de afeto.",
+  "Minhas emoções pesam mais que a lógica nas relações.",
+  "Confio na bondade inerente das pessoas.",
+  "Tenho facilidade em fazer amigos profundos rapidamente.",
+  "Minhas ações impactam o mundo de forma conectada.",
+  "Tenho forte senso de pertencimento a comunidades.",
+  "Existe uma dimensão espiritual que guia a existência.",
+  "Minha vida tem um propósito sagrado além do material."
 ];
 
-const generateQuestions = (): Question[] => {
-  const questions: Question[] = [];
-  for (let i = 0; i < COMPACT_QUESTIONS_LIST.length; i++) {
-    const dimensionIndex = Math.floor(i / 2);
-    if (dimensionIndex < DIMENSIONS.length) {
-      questions.push({
-        id: i + 1,
-        dimensionId: DIMENSIONS[dimensionIndex].id,
-        text: COMPACT_QUESTIONS_LIST[i]
-      });
-    }
-  }
-  return questions;
+const CORPORATE_QUESTIONS = [
+  // Engajamento
+  "Sinto-me energizado e motivado ao iniciar minha jornada de trabalho.",
+  "O tempo passa rápido quando estou focado em minhas tarefas profissionais.",
+  "Sinto que meu trabalho contribui diretamente para o sucesso da organização.",
+  "Falo com entusiasmo sobre a empresa para pessoas de fora.",
+  // Pertencimento
+  "Sinto que meus colegas de equipe realmente se importam comigo como pessoa.",
+  "Minha identidade profissional está fortemente ligada a esta equipe.",
+  "Sinto que sou ouvido e respeitado dentro do meu departamento.",
+  "Vejo-me trabalhando nesta organização pelos próximos anos.",
+  // Segurança
+  "Sinto-me confortável em admitir um erro sem medo de punição severa.",
+  "Posso discordar abertamente de decisões da liderança sem receio.",
+  "A equipe é aberta a novas ideias, mesmo as mais inusitadas.",
+  "Sinto que posso ser eu mesmo no ambiente de trabalho.",
+  // Propósito
+  "Os valores da empresa estão alinhados com o que eu acredito pessoalmente.",
+  "Entendo perfeitamente como meu papel ajuda a realizar a missão da empresa.",
+  "Sinto orgulho do impacto que nosso produto/serviço causa na sociedade.",
+  "Trabalho por algo maior do que apenas o salário no final do mês.",
+  // Colaboração
+  "Meus colegas compartilham conhecimentos livremente uns com os outros.",
+  "Em momentos de crise, a equipe se une para resolver o problema rapidamente.",
+  "Confio plenamente na qualidade do trabalho entregue pelos meus pares.",
+  "A cooperação aqui é mais valorizada do que a competição interna.",
+  // Burnout (Invertida)
+  "Ao final do dia, sinto-me exausto e sem energia para minha vida pessoal.",
+  "Tenho tido dificuldades para dormir pensando em problemas do trabalho.",
+  "Sinto que minhas tarefas são esmagadoras e nunca terminam.",
+  "Minha paciência com colegas e clientes tem diminuído drasticamente.",
+  // Estresse (Invertida)
+  "Sinto uma pressão constante para entregar resultados acima do humano.",
+  "O ambiente de trabalho é tenso e focado apenas em cobranças.",
+  "Sinto dores físicas (cabeça, costas) relacionadas ao estresse laboral.",
+  "Tenho dificuldade em me desconectar do trabalho nos fins de semana.",
+  // Isolamento (Invertida)
+  "Sinto que sou 'apenas um número' dentro desta grande engrenagem.",
+  "Frequentemente almoço ou passo os intervalos sozinho por falta de afinidade.",
+  "Faltam espaços de interação genuína entre as pessoas da empresa.",
+  "Sinto que ninguém realmente conhece minhas habilidades reais aqui.",
+  // Frustração (Invertida)
+  "Acredito que pessoas menos qualificadas são promovidas antes de mim.",
+  "As ferramentas de trabalho fornecidas são inadequadas para minhas tarefas.",
+  "Sinto que minha carreira está estagnada nesta organização.",
+  "A comunicação interna é falha e recebo informações importantes por último.",
+  // Clima
+  "Eu recomendaria esta empresa para um amigo próximo trabalhar.",
+  "A liderança demonstra empatia e se preocupa com a saúde da equipe.",
+  "O clima organizacional favorece a inovação e o bem-estar.",
+  "Sinto que sou recompensado de forma justa pelo meu esforço.",
+  "Há um equilíbrio saudável entre vida pessoal e profissional aqui.",
+  "Confio nas decisões estratégicas tomadas pela diretoria da empresa."
+];
+
+export const getQuestions = (type: 'individual' | 'corporate'): Question[] => {
+  const list = type === 'corporate' ? CORPORATE_QUESTIONS : INDIVIDUAL_QUESTIONS;
+  const dims = type === 'corporate' ? CORPORATE_DIMENSIONS : DIMENSIONS;
+  
+  return list.map((text, i) => {
+    const questionsPerDimension = type === 'corporate' ? 4.2 : 2; // Aproximação
+    const dimIndex = Math.floor(i / (list.length / dims.length));
+    return {
+      id: i + 1,
+      dimensionId: dims[dimIndex]?.id || dims[0].id,
+      text
+    };
+  });
 };
 
-export const QUESTIONS = generateQuestions();
+export const QUESTIONS = getQuestions('individual');
 export const TOTAL_QUESTIONS = QUESTIONS.length;

@@ -11,10 +11,6 @@ export interface Question {
   text: string;
 }
 
-export interface UserScore {
-  [dimensionId: string]: number;
-}
-
 export interface ProcessedResult {
   dimensionId: string;
   dimensionName: string;
@@ -22,10 +18,22 @@ export interface ProcessedResult {
   description: string;
 }
 
+export interface Company {
+  id: string;
+  name: string;
+  cnpj: string;
+  startDate: string;
+  endDate: string;
+  createdAt: any;
+}
+
 export interface UserInfo {
   name: string;
   email: string;
   whatsapp: string;
+  companyId?: string;
+  companyName?: string;
+  cnpj?: string;
   testType?: 'individual' | 'corporate';
 }
 
@@ -39,4 +47,5 @@ export type QuizState =
   | 'final-screen'
   | 'calculating' 
   | 'results' 
-  | 'admin';
+  | 'admin'
+  | 'company-selection';

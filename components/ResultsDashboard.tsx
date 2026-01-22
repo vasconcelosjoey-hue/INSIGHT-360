@@ -1,5 +1,5 @@
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { 
   Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer
 } from 'recharts';
@@ -21,14 +21,16 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ results, use
   const [customPrompt, setCustomPrompt] = useState<string>('');
   const [copied, setCopied] = useState(false);
   const [errorAi, setErrorAi] = useState(false);
+  
+  const analysisAreaRef = useRef<HTMLDivElement>(null);
 
-  // NORMALIZAÇÃO ABSOLUTA: Tenta todas as chaves possíveis (id/dimensionId, name/dimensionName)
+  // NORMALIZAÇÃO RESILIENTE: Garante que o gráfico e a IA leiam os nomes corretos
   const normalizedResults = useMemo(() => {
     if (!results || !Array.isArray(results)) return [];
     return results.map(r => {
       const data = r as any;
       return {
-        dimensionId: data.dimensionId || data.id || "unknown",
+        dimensionId: data.dimensionId || data.id || "dim",
         dimensionName: data.dimensionName || data.name || "Dimensão",
         score: typeof data.score === 'number' ? data.score : 0,
         description: data.description || ""
@@ -45,12 +47,16 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ results, use
     if (e) e.preventDefault();
     if (loadingAi) return;
     
+    // Feedback imediato: sobe a tela para onde o texto vai aparecer
+    analysisAreaRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    
     setLoadingAi(true);
     setErrorAi(false);
     
     try {
       const result = await generatePsychologicalAnalysis(normalizedResults, isCorporate, customPrompt);
       setAiAnalysis(result);
+      setCustomPrompt(''); // Limpa o campo após sucesso
     } catch (error) {
       console.error("Erro na Smartbox:", error);
       setErrorAi(true);
@@ -93,7 +99,7 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ results, use
         <main className="max-w-6xl mx-auto p-6 md:p-10 print:p-0">
           
           {/* PÁGINA 1: GRÁFICO E SCORES */}
-          <div id="print-page-1" className="bg-white rounded-[3rem] p-10 shadow-2xl mb-10 print:shadow-none print:m-0 print:p-0 print:rounded-none print:w-full print:min-h-[29.7cm] border border-slate-100 print:border-none">
+          <div className="bg-white rounded-[3rem] p-10 shadow-2xl mb-10 print:shadow-none print:m-0 print:p-0 print:rounded-none print:w-full print:min-h-[29.7cm] border border-slate-100 print:border-none">
             
             <div className="text-center mb-12 print:pt-6">
               <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full mb-4 ${themeBg} text-white print:bg-white print:text-black print:border-2 print:border-black`}>
@@ -150,8 +156,8 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ results, use
             </div>
           </div>
 
-          {/* PÁGINA 2: IA */}
-          <div id="print-page-2" className="print:break-before-page print:pt-10 mb-20">
+          {/* PÁGINA 2: ÁREA DA IA */}
+          <div ref={analysisAreaRef} id="print-page-2" className="print:break-before-page print:pt-10 mb-20">
             <div className="bg-white rounded-[3rem] shadow-2xl border-4 border-slate-50 print:border-2 print:border-black print:shadow-none overflow-hidden flex flex-col">
               <div className={`${themeBg} p-8 text-white print:bg-black print:text-white`}>
                 <div className="flex items-center gap-3">
@@ -160,36 +166,55 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ results, use
                 </div>
               </div>
 
-              <div className="p-12 min-h-[600px] print:p-10">
+              <div className="p-12 min-h-[400px] bg-white print:p-10">
                 {loadingAi ? (
-                  <div className="flex flex-col items-center justify-center py-20 gap-4">
-                    <Loader2 className={`w-12 h-12 animate-spin ${themeText}`} />
-                    <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Processando Inteligência...</p>
+                  <div className="flex flex-col items-center justify-center py-20 gap-6">
+                    <div className="relative">
+                      <Loader2 className={`w-16 h-16 animate-spin ${themeText}`} />
+                      <Brain className="absolute inset-0 m-auto w-6 h-6 text-slate-300" />
+                    </div>
+                    <p className="text-[11px] font-black text-slate-400 uppercase tracking-[0.4em] animate-pulse">Consultando Inteligência...</p>
                   </div>
                 ) : aiAnalysis ? (
-                  <div className="text-slate-900 text-base leading-relaxed whitespace-pre-line font-medium text-justify print:text-black print:text-[12pt] animate-fade-in">
+                  <div className="text-slate-900 text-base leading-relaxed whitespace-pre-line font-medium text-justify print:text-black print:text-[12pt] animate-fade-in-up">
                     {aiAnalysis}
+                  </div>
+                ) : errorAi ? (
+                  <div className="flex flex-col items-center justify-center py-20 gap-4 text-rose-500">
+                    <AlertCircle className="w-12 h-12" />
+                    <p className="font-black uppercase tracking-widest text-xs text-center">Não foi possível conectar à IA.<br/>Tente novamente em alguns segundos.</p>
                   </div>
                 ) : (
                   <div className="flex flex-col items-center justify-center py-20 opacity-30 print:hidden">
                     <MessageSquareText className="w-16 h-16 mb-6 text-slate-300" />
-                    <p className="text-xs font-black uppercase tracking-widest text-slate-400">Escreva na Smartbox para gerar o diagnóstico.</p>
+                    <p className="text-xs font-black uppercase tracking-widest text-slate-400 text-center leading-loose">
+                      Utilize a Smartbox abaixo para<br/>gerar o diagnóstico detalhado.
+                    </p>
                   </div>
                 )}
               </div>
 
+              {/* SMARTBOX FIXA NO RODAPÉ DO COMPONENTE */}
               <div className="p-10 bg-slate-50 border-t border-slate-100 print:hidden">
-                <form onSubmit={handleSmartAiCall} className="relative">
+                <form onSubmit={handleSmartAiCall} className="relative group">
                   <textarea 
                     value={customPrompt}
                     onChange={(e) => setCustomPrompt(e.target.value)}
-                    placeholder="Faça uma pergunta para a IA sobre estes resultados..."
-                    className="w-full bg-white border-2 border-slate-200 rounded-[2.5rem] py-8 pl-8 pr-24 text-slate-800 outline-none focus:border-indigo-400 min-h-[160px] shadow-inner transition-all resize-none text-sm"
+                    placeholder="Faça uma pergunta para a IA sobre estes resultados... Ex: 'Quais cargos são ideais para esse perfil?'"
+                    className="w-full bg-white border-2 border-slate-200 rounded-[2.5rem] py-8 pl-8 pr-24 text-slate-800 outline-none focus:border-indigo-400 min-h-[160px] shadow-inner transition-all resize-none text-sm font-medium"
                   />
-                  <button type="submit" disabled={loadingAi} className={`absolute right-4 bottom-4 p-6 ${themeBg} text-white rounded-[2rem] shadow-xl hover:scale-105 active:scale-95 disabled:opacity-50`}>
+                  <button 
+                    type="submit" 
+                    disabled={loadingAi || !customPrompt.trim()} 
+                    className={`absolute right-4 bottom-4 p-6 ${themeBg} text-white rounded-[2rem] shadow-xl hover:scale-105 active:scale-95 disabled:opacity-30 disabled:hover:scale-100 transition-all`}
+                    title="Enviar pergunta"
+                  >
                     {loadingAi ? <Loader2 className="w-6 h-6 animate-spin" /> : <Send className="w-6 h-6" />}
                   </button>
                 </form>
+                <p className="mt-4 text-[9px] font-bold text-slate-400 text-center uppercase tracking-widest">
+                  Processado por Redes Neurais • Respostas baseadas nos 21 eixos
+                </p>
               </div>
             </div>
           </div>
@@ -205,7 +230,6 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ results, use
           .print-hidden, header, form, button { display: none !important; }
           .h-screen { height: auto !important; overflow: visible !important; }
           
-          /* FORÇAR VISIBILIDADE DO TEXTO NO SVG */
           .recharts-polar-angle-axis-tick text { 
             fill: black !important; 
             font-weight: 900 !important;
@@ -222,6 +246,10 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ results, use
             stroke-width: 5px !important; 
           }
         }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade-in-up { animation: fadeInUp 0.5s ease-out forwards; }
       `}</style>
     </div>
   );

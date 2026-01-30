@@ -10,6 +10,8 @@ interface AdminDashboardProps {
   onViewLead: (userInfo: any, results: ProcessedResult[], testId: string) => void;
 }
 
+const BRAND_LOGO_URL = "https://firebasestorage.googleapis.com/v0/b/insight360-ae5c7.firebasestorage.app/o/ChatGPT%20Image%2029%20de%20jan.%20de%202026%2C%2022_42_41.png?alt=media&token=26c0189e-d7ee-4591-91bb-b9dcb37f5e12";
+
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack, onHome, onViewLead }) => {
   const [activeTab, setActiveTab] = useState<'leads' | 'companies'>('leads');
   const [leadFilter, setLeadFilter] = useState<'all' | 'individual' | 'corporate'>('all');
@@ -122,8 +124,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack, onHome, 
           <div className="flex items-center gap-4">
             <button onClick={onBack} title="Voltar" className="p-3 bg-white/5 hover:bg-white/10 rounded-xl border border-white/5 transition-colors"><ArrowLeft className="w-5 h-5 text-slate-400" /></button>
             <div className="flex items-center gap-3 cursor-pointer group" onClick={onHome}>
-              <div className="bg-indigo-600 p-2 rounded-lg group-hover:scale-110 transition-transform">
-                <Layers className="w-6 h-6 text-white" />
+              <div className="bg-white p-1 rounded-lg group-hover:scale-110 transition-transform w-10 h-10 flex items-center justify-center">
+                <img src={BRAND_LOGO_URL} alt="Logo" className="w-full h-full object-contain" />
               </div>
               <h1 className="text-xl font-black uppercase tracking-widest text-white leading-none">Insight<span className="text-indigo-500">360</span></h1>
             </div>

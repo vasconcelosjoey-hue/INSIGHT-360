@@ -13,6 +13,8 @@ import { AdminDashboard } from './components/AdminDashboard';
 import { saveTestResult, getActiveCompanies } from './services/firebase';
 import { Layers, ArrowRight, Building2, ChevronRight, Loader2, Search, ArrowLeft } from 'lucide-react';
 
+const BRAND_LOGO_URL = "https://firebasestorage.googleapis.com/v0/b/insight360-ae5c7.firebasestorage.app/o/ChatGPT%20Image%2029%20de%20jan.%20de%202026%2C%2022_42_41.png?alt=media&token=26c0189e-d7ee-4591-91bb-b9dcb37f5e12";
+
 const App: React.FC = () => {
   const [quizState, setQuizState] = useState<QuizState>('lead-capture');
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -118,9 +120,8 @@ const App: React.FC = () => {
               
               <div className="relative z-10">
                 <div className="flex items-center gap-4 mb-10 cursor-pointer" onClick={resetToHome}>
-                  <div className="p-4 bg-orange-600/20 rounded-2xl border border-orange-500/30">
-                    {/* Aqui mostramos a logo do Insight360 para resetar */}
-                    <Layers className="w-8 h-8 text-orange-500" />
+                  <div className="p-2 bg-white rounded-2xl border border-white/10 overflow-hidden w-16 h-16 flex items-center justify-center">
+                    <img src={BRAND_LOGO_URL} alt="Logo" className="w-full h-full object-contain" />
                   </div>
                   <div>
                     <h2 className="text-3xl font-black text-white uppercase tracking-tighter leading-tight">ESCOLHA SUA <br/><span className="text-orange-500">EMPRESA</span></h2>
@@ -222,7 +223,9 @@ const App: React.FC = () => {
                 <ArrowLeft className="w-3 h-3" /> Voltar
               </button>
               <div className="cursor-pointer mx-auto mb-6 w-fit" onClick={resetToHome}>
-                <Layers className={`w-16 h-16 ${isCorporate ? 'text-orange-500' : 'text-indigo-500'}`} />
+                <div className="w-24 h-24 bg-white rounded-full p-4 shadow-2xl flex items-center justify-center overflow-hidden">
+                  <img src={BRAND_LOGO_URL} alt="Insight360" className="w-full h-full object-contain" />
+                </div>
               </div>
               <h1 className="text-5xl font-black text-white mb-6 uppercase tracking-tighter">
                 {isCorporate ? 'VitalPulse' : 'Individual'} <span className={isCorporate ? 'text-orange-500' : 'text-indigo-500'}>360</span>

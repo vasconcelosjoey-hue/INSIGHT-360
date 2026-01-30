@@ -8,6 +8,8 @@ interface LeadCaptureProps {
   onAdminLogin: () => void;
 }
 
+const BRAND_LOGO_URL = "https://firebasestorage.googleapis.com/v0/b/insight360-ae5c7.firebasestorage.app/o/ChatGPT%20Image%2029%20de%20jan.%20de%202026%2C%2022_42_41.png?alt=media&token=26c0189e-d7ee-4591-91bb-b9dcb37f5e12";
+
 export const LeadCapture: React.FC<LeadCaptureProps> = ({ onComplete, onAdminLogin }) => {
   const [formData, setFormData] = useState<UserInfo>({
     name: '',
@@ -181,8 +183,8 @@ export const LeadCapture: React.FC<LeadCaptureProps> = ({ onComplete, onAdminLog
             <div className="absolute -inset-20 border border-dashed border-white/5 rounded-full animate-spin-slow opacity-30" />
 
             {/* LOGO CENTRAL */}
-            <div className="w-56 h-56 bg-white rounded-full shadow-[0_40px_80px_rgba(0,0,0,0.6)] flex items-center justify-center relative z-10 hover:scale-105 transition-transform duration-700">
-               <Layers className={`w-24 h-24 ${isCorporate ? 'text-orange-500' : 'text-indigo-600'}`} />
+            <div className="w-56 h-56 bg-white rounded-full shadow-[0_40px_80px_rgba(0,0,0,0.6)] flex items-center justify-center relative z-10 hover:scale-105 transition-transform duration-700 overflow-hidden">
+               <img src={BRAND_LOGO_URL} alt="Insight360 Logo" className="w-full h-full object-contain p-4" />
             </div>
           </div>
           

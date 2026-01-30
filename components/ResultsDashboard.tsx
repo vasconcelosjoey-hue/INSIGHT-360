@@ -15,6 +15,8 @@ interface ResultsDashboardProps {
   isAdmin?: boolean;
 }
 
+const BRAND_LOGO_URL = "https://firebasestorage.googleapis.com/v0/b/insight360-ae5c7.firebasestorage.app/o/ChatGPT%20Image%2029%20de%20jan.%20de%202026%2C%2022_42_41.png?alt=media&token=26c0189e-d7ee-4591-91bb-b9dcb37f5e12";
+
 export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ results, userInfo, testId, onRestart, onHome, isAdmin = false }) => {
   const normalizedResults = useMemo(() => {
     if (!results || !Array.isArray(results)) return [];
@@ -49,8 +51,10 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ results, use
             </button>
           </div>
 
-          <div className="cursor-pointer group" onClick={onHome}>
-            <Layers className={`w-8 h-8 ${isCorporate ? 'text-orange-600' : 'text-indigo-600'} group-hover:scale-110 transition-transform`} />
+          <div className="cursor-pointer group flex items-center justify-center" onClick={onHome}>
+            <div className="w-10 h-10 bg-white rounded-lg group-hover:scale-110 transition-transform flex items-center justify-center overflow-hidden">
+              <img src={BRAND_LOGO_URL} alt="Logo" className="w-full h-full object-contain" />
+            </div>
           </div>
           
           <div className="flex items-center gap-4">

@@ -7,6 +7,8 @@ interface WelcomeWizardProps {
   onBack: () => void;
 }
 
+const BRAND_LOGO_URL = "https://firebasestorage.googleapis.com/v0/b/insight360-ae5c7.firebasestorage.app/o/ChatGPT%20Image%2029%20de%20jan.%20de%202026%2C%2022_42_41.png?alt=media&token=26c0189e-d7ee-4591-91bb-b9dcb37f5e12";
+
 export const WelcomeWizard: React.FC<WelcomeWizardProps> = ({ onComplete, onBack }) => {
   const [step, setStep] = useState(1);
   const totalSteps = 3;
@@ -36,8 +38,8 @@ export const WelcomeWizard: React.FC<WelcomeWizardProps> = ({ onComplete, onBack
         
         <div className="pt-8 px-8 pb-4 flex-shrink-0 flex items-center justify-between">
           <div className="flex items-center gap-3 cursor-pointer group" onClick={onBack}>
-            <div className="bg-gradient-to-br from-indigo-500 to-violet-600 p-2 rounded-lg shadow-lg group-hover:scale-110 transition-transform">
-               <Layers className="w-5 h-5 text-white" />
+            <div className="bg-white p-1 rounded-lg shadow-lg group-hover:scale-110 transition-transform w-10 h-10 flex items-center justify-center overflow-hidden">
+               <img src={BRAND_LOGO_URL} alt="Logo" className="w-full h-full object-contain" />
             </div>
             <h2 className="text-xl md:text-2xl font-bold text-white tracking-wide">
               Bem-vindo

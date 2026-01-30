@@ -7,6 +7,8 @@ interface ThankYouProps {
   isFinal?: boolean;
 }
 
+const BRAND_LOGO_URL = "https://firebasestorage.googleapis.com/v0/b/insight360-ae5c7.firebasestorage.app/o/ChatGPT%20Image%2029%20de%20jan.%20de%202026%2C%2022_42_41.png?alt=media&token=26c0189e-d7ee-4591-91bb-b9dcb37f5e12";
+
 export const ThankYou: React.FC<ThankYouProps> = ({ onContinue, isFinal = false }) => {
   useEffect(() => {
     if (!isFinal) {
@@ -38,9 +40,9 @@ export const ThankYou: React.FC<ThankYouProps> = ({ onContinue, isFinal = false 
                  <Star className="absolute -top-1 -right-1 w-5 h-5 text-amber-300 animate-pulse fill-amber-300" />
                </div>
              ) : (
-               <div className="relative">
-                 <Layers className="w-10 h-10 lg:w-16 lg:h-16 text-white" />
-                 <div className="absolute inset-0 bg-indigo-500 blur-xl opacity-20 animate-pulse" />
+               <div className="relative w-full h-full bg-white rounded-3xl overflow-hidden p-3 shadow-2xl">
+                 <img src={BRAND_LOGO_URL} alt="Insight360" className="w-full h-full object-contain" />
+                 <div className="absolute inset-0 bg-indigo-500 blur-xl opacity-20 animate-pulse pointer-events-none" />
                </div>
              )}
           </div>

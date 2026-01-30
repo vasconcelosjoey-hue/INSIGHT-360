@@ -163,10 +163,10 @@ export const LeadCapture: React.FC<LeadCaptureProps> = ({ onComplete, onAdminLog
             </button>
           </form>
 
-          {/* Footer Alinhado */}
-          <div className="mt-8 flex items-center justify-between text-[8px] font-black uppercase tracking-widest text-slate-700 border-t border-white/5 pt-6">
-             <button onClick={() => setIsLoginOpen(true)} className="hover:text-slate-400 transition-colors flex items-center gap-1.5"><Lock className="w-2.5 h-2.5" /> Administração</button>
-             <p>Powered By JOI.A.</p>
+          {/* Footer Alinhado com fonte aumentada */}
+          <div className="mt-8 flex items-center justify-between text-[11px] font-black uppercase tracking-widest text-slate-600 border-t border-white/5 pt-6">
+             <button onClick={() => setIsLoginOpen(true)} className="hover:text-slate-400 transition-colors flex items-center gap-1.5"><Lock className="w-3 h-3" /> Administração</button>
+             <p className="opacity-80">POWERED BY JOI.A.</p>
           </div>
         </div>
       </div>

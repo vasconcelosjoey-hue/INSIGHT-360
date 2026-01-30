@@ -1,11 +1,13 @@
+
 import React, { useState } from 'react';
-import { Check, ArrowRight, Layers } from 'lucide-react';
+import { Check, ArrowRight, Layers, Home, ArrowLeft } from 'lucide-react';
 
 interface WelcomeWizardProps {
   onComplete: () => void;
+  onBack: () => void;
 }
 
-export const WelcomeWizard: React.FC<WelcomeWizardProps> = ({ onComplete }) => {
+export const WelcomeWizard: React.FC<WelcomeWizardProps> = ({ onComplete, onBack }) => {
   const [step, setStep] = useState(1);
   const totalSteps = 3;
 
@@ -20,35 +22,38 @@ export const WelcomeWizard: React.FC<WelcomeWizardProps> = ({ onComplete }) => {
   const handlePrev = () => {
     if (step > 1) {
       setStep(step - 1);
+    } else {
+      onBack();
     }
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0f172a] animate-fade-in overflow-hidden">
-      {/* Background Decor */}
       <div className="absolute -top-40 -right-40 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl" />
       <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-violet-500/10 rounded-full blur-3xl" />
 
       <div className="relative w-full max-w-lg bg-white/5 backdrop-blur-xl border border-white/10 rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col max-h-[90dvh] transition-all">
         
-        {/* Header */}
-        <div className="pt-8 px-8 pb-4 flex-shrink-0 flex items-center gap-3">
-          <div className="bg-gradient-to-br from-indigo-500 to-violet-600 p-2 rounded-lg shadow-lg">
-             <Layers className="w-5 h-5 text-white" />
+        <div className="pt-8 px-8 pb-4 flex-shrink-0 flex items-center justify-between">
+          <div className="flex items-center gap-3 cursor-pointer group" onClick={onBack}>
+            <div className="bg-gradient-to-br from-indigo-500 to-violet-600 p-2 rounded-lg shadow-lg group-hover:scale-110 transition-transform">
+               <Layers className="w-5 h-5 text-white" />
+            </div>
+            <h2 className="text-xl md:text-2xl font-bold text-white tracking-wide">
+              Bem-vindo
+            </h2>
           </div>
-          <h2 className="text-xl md:text-2xl font-bold text-white tracking-wide">
-            Bem-vindo
-          </h2>
+          <button onClick={onBack} className="p-2 text-slate-500 hover:text-white transition-colors">
+            <Home className="w-5 h-5" />
+          </button>
         </div>
 
-        {/* Stepper */}
         <div className="px-8 py-4 flex-shrink-0">
           <div className="flex items-center justify-between relative">
             <div className="absolute left-0 top-1/2 w-full h-[2px] bg-slate-700/50 -z-10 transform -translate-y-1/2"></div>
             {[1, 2, 3].map((s) => {
               const isActive = s === step;
               const isCompleted = s < step;
-              
               return (
                 <div 
                   key={s} 
@@ -68,14 +73,13 @@ export const WelcomeWizard: React.FC<WelcomeWizardProps> = ({ onComplete }) => {
           </div>
         </div>
 
-        {/* Content Area */}
         <div className="flex-grow px-8 py-6 flex items-center overflow-y-auto">
           <div className="text-slate-300 text-lg leading-relaxed font-light">
             {step === 1 && (
               <div className="animate-fade-in-up space-y-4">
                 <h3 className="text-2xl font-bold text-white">Ciência Comportamental</h3>
                 <p>
-                  O <strong className="text-indigo-400">Insight360</strong> utiliza uma metodologia moderna baseada em neurociências para mapear suas tendências naturais. Não é mágica, é ciência aplicada ao seu desenvolvimento.
+                  O <strong className="text-indigo-400">Insight360</strong> utiliza uma metodologia moderna baseada em neurociências para mapear suas tendências naturais.
                 </p>
               </div>
             )}
@@ -83,7 +87,7 @@ export const WelcomeWizard: React.FC<WelcomeWizardProps> = ({ onComplete }) => {
               <div className="animate-fade-in-up space-y-4">
                 <h3 className="text-2xl font-bold text-white">Análise Multidimensional</h3>
                 <p>
-                  Ao contrário de testes simples, analisamos <strong className="text-indigo-400">21 dimensões distintas</strong>. Isso gera uma impressão digital única da sua personalidade, revelando nuances que outros testes ignoram.
+                  Analisamos <strong className="text-indigo-400">21 dimensões distintas</strong>. Isso gera uma impressão digital única da sua personalidade.
                 </p>
               </div>
             )}
@@ -91,26 +95,20 @@ export const WelcomeWizard: React.FC<WelcomeWizardProps> = ({ onComplete }) => {
               <div className="animate-fade-in-up space-y-4">
                 <h3 className="text-2xl font-bold text-white">Sem Julgamentos</h3>
                 <p>
-                  Não existem perfis "bons" ou "ruins". O objetivo é o autoconhecimento estratégico. Responda com sinceridade absoluta para garantir a precisão do seu relatório exclusivo.
+                  Não existem perfis "bons" ou "ruins". Responda com sinceridade absoluta para garantir a precisão do seu relatório exclusivo.
                 </p>
               </div>
             )}
           </div>
         </div>
 
-        {/* Footer Buttons */}
         <div className="p-8 pt-4 flex justify-between gap-4 flex-shrink-0 border-t border-white/5 bg-black/20">
           <button
             onClick={handlePrev}
-            disabled={step === 1}
-            className={`
-              px-6 py-3 rounded-xl font-medium transition-all text-sm
-              ${step === 1 
-                ? 'text-slate-600 cursor-not-allowed' 
-                : 'text-slate-300 hover:text-white hover:bg-white/5'}
-            `}
+            className={`px-6 py-3 rounded-xl font-medium transition-all text-sm text-slate-300 hover:text-white hover:bg-white/5 flex items-center gap-2`}
           >
-            Voltar
+            <ArrowLeft className="w-4 h-4" />
+            {step === 1 ? 'Sair' : 'Voltar'}
           </button>
           
           <button
@@ -121,7 +119,6 @@ export const WelcomeWizard: React.FC<WelcomeWizardProps> = ({ onComplete }) => {
             <ArrowRight className="w-4 h-4" />
           </button>
         </div>
-
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 
 import { initializeApp, getApp, getApps } from 'firebase/app';
-import { getFirestore, collection, addDoc, serverTimestamp, getDocs, query, orderBy, where } from 'firebase/firestore';
+import { getFirestore, collection, addDoc, serverTimestamp, getDocs, query, orderBy, where, deleteDoc, doc } from 'firebase/firestore';
 import { UserInfo, ProcessedResult, Company } from '../types';
 
 const firebaseConfig = {
@@ -31,14 +31,38 @@ export const saveCompany = async (company: Omit<Company, 'id' | 'createdAt'>) =>
   }
 };
 
+export const deleteCompany = async (id: string) => {
+  try {
+    await deleteDoc(doc(db, "companies", id));
+    return true;
+  } catch (error) {
+    console.error("Erro ao deletar empresa:", error);
+    throw error;
+  }
+};
+
+export const deleteLead = async (id: string) => {
+  try {
+    await deleteDoc(doc(db, "leads", id));
+    return true;
+  } catch (error) {
+    console.error("Erro ao deletar lead:", error);
+    throw error;
+  }
+};
+
 export const getActiveCompanies = async () => {
   try {
     const now = new Date().toISOString().split('T')[0];
     const q = query(collection(db, "companies"), orderBy("name", "asc"));
     const snapshot = await getDocs(q);
+    
     return snapshot.docs
       .map(doc => ({ id: doc.id, ...doc.data() } as Company))
-      .filter(c => now >= c.startDate && now <= c.endDate);
+      .filter(c => {
+        if (!c.startDate || !c.endDate) return true;
+        return now >= c.startDate && now <= c.endDate;
+      });
   } catch (error) {
     console.error("Erro ao buscar empresas ativas:", error);
     return [];
@@ -58,7 +82,6 @@ export const getAllCompanies = async () => {
 
 export const saveTestResult = async (userInfo: UserInfo, results: ProcessedResult[], testId: string) => {
   try {
-    // Salvando com as chaves corretas para evitar undefined
     await addDoc(collection(db, "leads"), {
       testId,
       ...userInfo,

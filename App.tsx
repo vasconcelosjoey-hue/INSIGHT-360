@@ -181,9 +181,9 @@ const App: React.FC = () => {
           </div>
         )}
 
-        {quizState === 'welcome' && <WelcomeWizard onComplete={() => setQuizState('intro')} onBack={() => setQuizState('lead-capture')} />}
-        {quizState === 'thank-you' && <ThankYou onContinue={() => {}} isFinal={false} />}
-        {quizState === 'final-screen' && <ThankYou onContinue={() => window.location.reload()} isFinal={true} />}
+        {quizState === 'welcome' && <WelcomeWizard onComplete={() => setQuizState('intro')} onBack={() => setQuizState('lead-capture')} isCorporate={isCorporate} />}
+        {quizState === 'thank-you' && <ThankYou onContinue={() => {}} isFinal={false} isCorporate={isCorporate} />}
+        {quizState === 'final-screen' && <ThankYou onContinue={() => window.location.reload()} isFinal={true} isCorporate={isCorporate} />}
         
         {quizState === 'admin' && (
           <AdminDashboard 
@@ -202,6 +202,7 @@ const App: React.FC = () => {
             onAnswer={(v) => setAnswers({...answers, [currentQuestions[currentQuestionIndex].id]: v})} 
             onPrevious={() => setCurrentQuestionIndex(p => Math.max(0, p - 1))} 
             onNext={() => currentQuestionIndex < currentQuestions.length - 1 ? setCurrentQuestionIndex(p => p + 1) : processResults(answers)} 
+            isCorporate={isCorporate}
           />
         )}
 

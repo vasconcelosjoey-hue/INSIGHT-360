@@ -11,6 +11,7 @@ interface QuizStepProps {
   onAnswer: (value: number) => void;
   onPrevious: () => void;
   onNext: () => void;
+  isCorporate?: boolean;
 }
 
 export const QuizStep: React.FC<QuizStepProps> = ({ 
@@ -20,7 +21,8 @@ export const QuizStep: React.FC<QuizStepProps> = ({
   selectedAnswer,
   onAnswer,
   onPrevious,
-  onNext
+  onNext,
+  isCorporate = false
 }) => {
   const [shake, setShake] = useState(false);
   const [showErrorPopup, setShowErrorPopup] = useState(false);
@@ -57,6 +59,12 @@ export const QuizStep: React.FC<QuizStepProps> = ({
   const isLastQuestion = currentNumber === totalQuestions;
   const progress = (currentNumber / totalQuestions) * 100;
 
+  const themeColorClass = isCorporate ? 'bg-orange-600' : 'bg-indigo-600';
+  const themeBorderClass = isCorporate ? 'border-orange-600' : 'border-indigo-600';
+  const themeTextHeader = isCorporate ? 'text-orange-900' : 'text-indigo-900';
+  const themeHoverBorder = isCorporate ? 'hover:border-orange-200' : 'hover:border-indigo-200';
+  const themeIndicator = isCorporate ? 'text-orange-500' : 'text-indigo-500';
+
   return (
     <div className="h-full w-full flex flex-col bg-white overflow-hidden relative">
       
@@ -71,14 +79,16 @@ export const QuizStep: React.FC<QuizStepProps> = ({
       {/* Progress Header */}
       <div className="p-4 md:px-8 pt-6 flex-shrink-0">
         <div className="flex justify-between items-center mb-2 px-1">
-          <span className="text-[10px] font-black text-indigo-900 tracking-[0.2em] uppercase">Mapeamento 360°</span>
+          <span className={`text-[10px] font-black ${themeTextHeader} tracking-[0.2em] uppercase`}>
+            {isCorporate ? 'VitalPulse Analytics' : 'Mapeamento 360°'}
+          </span>
           <span className="text-sm font-bold text-slate-500">
             Questão {currentNumber} de {totalQuestions}
           </span>
         </div>
         <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
           <div 
-            className="h-full bg-indigo-600 transition-all duration-500 ease-out"
+            className={`h-full ${themeColorClass} transition-all duration-500 ease-out`}
             style={{ width: `${progress}%` }}
           />
         </div>
@@ -93,7 +103,7 @@ export const QuizStep: React.FC<QuizStepProps> = ({
             <h3 className="text-lg md:text-3xl font-extrabold text-slate-900 leading-tight">
               {question.text}
             </h3>
-            <div className="w-12 h-1 bg-indigo-500 mx-auto mt-4 rounded-full opacity-50"></div>
+            <div className={`w-12 h-1 ${isCorporate ? 'bg-orange-500' : 'bg-indigo-500'} mx-auto mt-4 rounded-full opacity-50`}></div>
           </div>
 
           {/* Options List */}
@@ -107,8 +117,8 @@ export const QuizStep: React.FC<QuizStepProps> = ({
                   className={`
                     flex items-center p-3 md:p-4 rounded-2xl transition-all duration-200 border-2 text-left
                     ${isSelected 
-                      ? 'bg-indigo-600 border-indigo-600 text-white shadow-lg shadow-indigo-600/20' 
-                      : 'bg-white border-slate-100 hover:border-slate-200 text-slate-600'}
+                      ? `${themeColorClass} ${themeBorderClass} text-white shadow-lg` 
+                      : `bg-white border-slate-100 ${themeHoverBorder} text-slate-600`}
                   `}
                 >
                   <div className={`
@@ -139,7 +149,7 @@ export const QuizStep: React.FC<QuizStepProps> = ({
             flex items-center gap-1.5 px-4 py-3 rounded-xl font-bold transition-all text-xs md:text-sm uppercase tracking-widest
             ${currentNumber === 1 
               ? 'text-slate-300' 
-              : 'text-slate-500 hover:text-indigo-600'}
+              : `text-slate-500 hover:${themeIndicator}`}
           `}
         >
           <ChevronLeft className="w-4 h-4" />

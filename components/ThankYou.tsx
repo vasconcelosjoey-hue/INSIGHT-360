@@ -38,17 +38,17 @@ export const ThankYou: React.FC<ThankYouProps> = ({ onContinue, isFinal = false,
         
         {/* Brand Core (Optimized for mobile) */}
         <div className="flex-shrink-0 mb-4 lg:mb-8">
-          <div className="relative w-20 h-20 lg:w-32 lg:h-32 flex items-center justify-center mx-auto">
+          <div className="relative w-24 h-24 lg:w-36 lg:h-36 flex items-center justify-center mx-auto">
              <div className={`absolute inset-0 border-[1px] ${isCorporate ? 'border-orange-500/30' : 'border-indigo-500/30'} rounded-full animate-spin-slow-reverse`} />
              
              {isFinal ? (
-               <div className={`bg-gradient-to-br ${isCorporate ? 'from-orange-500 to-amber-700' : 'from-indigo-500 to-violet-700'} p-5 lg:p-8 rounded-[1.8rem] shadow-2xl relative`}>
+               <div className={`bg-gradient-to-br ${isCorporate ? 'from-orange-500 to-amber-700' : 'from-indigo-500 to-violet-700'} p-5 lg:p-8 rounded-full shadow-2xl relative`}>
                  <CheckCircle2 className="w-8 h-8 lg:w-12 lg:h-12 text-white" />
                  <Star className="absolute -top-1 -right-1 w-5 h-5 text-amber-300 animate-pulse fill-amber-300" />
                </div>
              ) : (
-               <div className="relative w-full h-full bg-white rounded-3xl overflow-hidden p-3 shadow-2xl">
-                 <img src={BRAND_LOGO_URL} alt="Insight360" className="w-full h-full object-contain" />
+               <div className="relative w-full h-full bg-white rounded-full overflow-hidden p-1 shadow-2xl border-2 border-slate-100">
+                 <img src={BRAND_LOGO_URL} alt="Insight360" className="w-full h-full object-cover rounded-full" />
                  <div className={`absolute inset-0 ${isCorporate ? 'bg-orange-500' : 'bg-indigo-500'} blur-xl opacity-20 animate-pulse pointer-events-none`} />
                </div>
              )}

@@ -124,8 +124,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack, onHome, 
           <div className="flex items-center gap-4">
             <button onClick={onBack} title="Voltar" className="p-3 bg-white/5 hover:bg-white/10 rounded-xl border border-white/5 transition-colors"><ArrowLeft className="w-5 h-5 text-slate-400" /></button>
             <div className="flex items-center gap-3 cursor-pointer group" onClick={onHome}>
-              <div className="bg-white p-1 rounded-lg group-hover:scale-110 transition-transform w-10 h-10 flex items-center justify-center">
-                <img src={BRAND_LOGO_URL} alt="Logo" className="w-full h-full object-contain" />
+              {/* Logo Redonda no Admin Dashboard */}
+              <div className="bg-white p-1 rounded-full group-hover:scale-110 transition-transform w-10 h-10 flex items-center justify-center shadow-sm overflow-hidden border border-slate-100">
+                <img src={BRAND_LOGO_URL} alt="Logo" className="w-full h-full object-cover" />
               </div>
               <h1 className="text-xl font-black uppercase tracking-widest text-white leading-none">Insight<span className="text-indigo-500">360</span></h1>
             </div>

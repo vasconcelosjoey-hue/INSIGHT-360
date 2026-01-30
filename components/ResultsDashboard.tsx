@@ -1,5 +1,5 @@
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect } from 'react';
 import { 
   Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer
 } from 'recharts';
@@ -36,6 +36,35 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ results, use
   const themeText = isCorporate ? 'text-orange-600' : 'text-indigo-600';
   const themeBorder = isCorporate ? 'border-orange-100' : 'border-indigo-100';
 
+  const handlePrint = () => {
+    const originalTitle = document.title;
+    let fileName = "Relatorio";
+
+    if (userInfo) {
+      if (isCorporate) {
+        // Nome da Empresa - vitalpulse
+        const companyName = (userInfo.companyName || 'Empresa').toUpperCase().replace(/\s+/g, '');
+        fileName = `${companyName}-vitalpulse`;
+      } else {
+        // Nome do Entrevistado - individual360
+        const userName = (userInfo.name || 'Entrevistado').toUpperCase().replace(/\s+/g, '');
+        fileName = `${userName}-individual360`;
+      }
+    }
+
+    // Altera o título do documento temporariamente para que o navegador use como nome do arquivo PDF
+    document.title = fileName;
+    
+    // Adiciona listener para restaurar o título após a impressão
+    const restoreTitle = () => {
+      document.title = originalTitle;
+      window.removeEventListener('afterprint', restoreTitle);
+    };
+    window.addEventListener('afterprint', restoreTitle);
+
+    window.print();
+  };
+
   return (
     <div className="w-full h-screen bg-slate-100 flex flex-col overflow-hidden print:bg-white print:overflow-visible print:h-auto print:block">
       
@@ -52,8 +81,9 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ results, use
           </div>
 
           <div className="cursor-pointer group flex items-center justify-center" onClick={onHome}>
-            <div className="w-10 h-10 bg-white rounded-lg group-hover:scale-110 transition-transform flex items-center justify-center overflow-hidden">
-              <img src={BRAND_LOGO_URL} alt="Logo" className="w-full h-full object-contain" />
+            {/* Logo Redonda no Header */}
+            <div className="w-10 h-10 bg-white rounded-full group-hover:scale-110 transition-transform flex items-center justify-center overflow-hidden shadow-sm border border-slate-100">
+              <img src={BRAND_LOGO_URL} alt="Logo" className="w-full h-full object-cover" />
             </div>
           </div>
           
@@ -62,7 +92,7 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ results, use
               <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Protocolo Ativo</span>
               <span className="text-[11px] font-bold text-slate-900">{testId}</span>
             </div>
-            <button onClick={() => window.print()} className={`${themeBg} text-white px-6 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center gap-2 shadow-lg hover:brightness-110 transition-all active:scale-95`}>
+            <button onClick={handlePrint} className={`${themeBg} text-white px-6 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center gap-2 shadow-lg hover:brightness-110 transition-all active:scale-95`}>
               <Printer className="w-4 h-4" /> Imprimir Diagnóstico
             </button>
           </div>
@@ -128,6 +158,12 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ results, use
                   ))}
                 </div>
                 <div className="mt-auto pt-10 text-center opacity-40 print:opacity-100">
+                  {/* Logo Redonda também no PDF final */}
+                  <div className="mb-4 flex justify-center print:block hidden">
+                    <div className="w-12 h-12 bg-white rounded-full overflow-hidden mx-auto border border-slate-200">
+                      <img src={BRAND_LOGO_URL} alt="Logo" className="w-full h-full object-cover" />
+                    </div>
+                  </div>
                   <p className="text-[8px] font-black uppercase tracking-[0.5em] text-slate-400 print:text-black">
                     Diagnóstico Gerado por Insight360 Engine
                   </p>

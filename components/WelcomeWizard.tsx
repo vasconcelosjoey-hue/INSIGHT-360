@@ -48,8 +48,9 @@ export const WelcomeWizard: React.FC<WelcomeWizardProps> = ({ onComplete, onBack
         
         <div className="pt-8 px-8 pb-4 flex-shrink-0 flex items-center justify-between">
           <div className="flex items-center gap-3 cursor-pointer group" onClick={onBack}>
-            <div className="bg-white p-1 rounded-lg shadow-lg group-hover:scale-110 transition-transform w-10 h-10 flex items-center justify-center overflow-hidden">
-               <img src={BRAND_LOGO_URL} alt="Logo" className="w-full h-full object-contain" />
+            {/* Logo Redonda no WelcomeWizard */}
+            <div className="bg-white p-1 rounded-full shadow-lg group-hover:scale-110 transition-transform w-10 h-10 flex items-center justify-center overflow-hidden border border-slate-100">
+               <img src={BRAND_LOGO_URL} alt="Logo" className="w-full h-full object-cover" />
             </div>
             <h2 className="text-xl md:text-2xl font-bold text-white tracking-wide">
               {isCorporate ? 'VitalPulse' : 'Bem-vindo'}

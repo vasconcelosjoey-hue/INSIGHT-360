@@ -120,8 +120,9 @@ const App: React.FC = () => {
               
               <div className="relative z-10">
                 <div className="flex items-center gap-4 mb-10 cursor-pointer" onClick={resetToHome}>
-                  <div className="p-2 bg-white rounded-2xl border border-white/10 overflow-hidden w-16 h-16 flex items-center justify-center">
-                    <img src={BRAND_LOGO_URL} alt="Logo" className="w-full h-full object-contain" />
+                  {/* Logo Redonda na Seleção de Empresa */}
+                  <div className="p-2 bg-white rounded-full border border-white/10 overflow-hidden w-16 h-16 flex items-center justify-center">
+                    <img src={BRAND_LOGO_URL} alt="Logo" className="w-full h-full object-cover" />
                   </div>
                   <div>
                     <h2 className="text-3xl font-black text-white uppercase tracking-tighter leading-tight">ESCOLHA SUA <br/><span className="text-orange-500">EMPRESA</span></h2>
@@ -224,8 +225,9 @@ const App: React.FC = () => {
                 <ArrowLeft className="w-3 h-3" /> Voltar
               </button>
               <div className="cursor-pointer mx-auto mb-6 w-fit" onClick={resetToHome}>
-                <div className="w-24 h-24 bg-white rounded-full p-4 shadow-2xl flex items-center justify-center overflow-hidden">
-                  <img src={BRAND_LOGO_URL} alt="Insight360" className="w-full h-full object-contain" />
+                {/* Logo Redonda na Intro */}
+                <div className="w-24 h-24 bg-white rounded-full p-1 shadow-2xl flex items-center justify-center overflow-hidden border-2 border-slate-100">
+                  <img src={BRAND_LOGO_URL} alt="Insight360" className="w-full h-full object-cover rounded-full" />
                 </div>
               </div>
               <h1 className="text-5xl font-black text-white mb-6 uppercase tracking-tighter">

@@ -27,6 +27,7 @@ export const LeadCapture: React.FC<LeadCaptureProps> = ({ onComplete, onAdminLog
   const isCorporate = formData.testType === 'corporate';
   const accentColor = isCorporate ? 'text-orange-500' : 'text-indigo-400';
   const buttonBg = isCorporate ? 'bg-orange-600' : 'bg-indigo-600';
+  const ringBorderColor = isCorporate ? 'border-orange-500' : 'border-indigo-500';
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -179,11 +180,11 @@ export const LeadCapture: React.FC<LeadCaptureProps> = ({ onComplete, onAdminLog
           
           <div className="relative group">
             <div className={`absolute inset-0 blur-[100px] opacity-20 rounded-full animate-pulse-slow transition-colors duration-1000 ${isCorporate ? 'bg-orange-500' : 'bg-indigo-500'}`} />
-            <div className="absolute -inset-10 border border-white/10 rounded-full animate-spin-slow-reverse" />
-            <div className="absolute -inset-20 border border-dashed border-white/5 rounded-full animate-spin-slow opacity-30" />
+            <div className={`absolute -inset-10 border-4 ${ringBorderColor} opacity-20 rounded-full animate-spin-slow-reverse transition-colors duration-700`} />
+            <div className={`absolute -inset-20 border border-dashed ${ringBorderColor} rounded-full animate-spin-slow opacity-10 transition-colors duration-700`} />
 
-            {/* LOGO CENTRAL - APENAS A LOGO, RESPONSIVA NO CONTAINER */}
-            <div className="w-64 h-64 lg:w-80 lg:h-80 bg-white rounded-full shadow-[0_40px_80px_rgba(0,0,0,0.6)] flex items-center justify-center relative z-10 hover:scale-105 transition-transform duration-700 overflow-hidden border-8 border-white/5">
+            {/* LOGO CENTRAL - COM CONTORNO RESPONSIVO AO TIPO DE TESTE */}
+            <div className={`w-64 h-64 lg:w-80 lg:h-80 bg-white rounded-full shadow-[0_40px_80px_rgba(0,0,0,0.6)] flex items-center justify-center relative z-10 hover:scale-105 transition-all duration-700 overflow-hidden border-[10px] ${ringBorderColor}`}>
                <img src={BRAND_LOGO_URL} alt="Insight360 Logo" className="w-full h-full object-cover" />
             </div>
           </div>

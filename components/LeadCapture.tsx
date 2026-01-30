@@ -182,15 +182,10 @@ export const LeadCapture: React.FC<LeadCaptureProps> = ({ onComplete, onAdminLog
             <div className="absolute -inset-10 border border-white/10 rounded-full animate-spin-slow-reverse" />
             <div className="absolute -inset-20 border border-dashed border-white/5 rounded-full animate-spin-slow opacity-30" />
 
-            {/* LOGO CENTRAL */}
-            <div className="w-56 h-56 bg-white rounded-full shadow-[0_40px_80px_rgba(0,0,0,0.6)] flex items-center justify-center relative z-10 hover:scale-105 transition-transform duration-700 overflow-hidden">
-               <img src={BRAND_LOGO_URL} alt="Insight360 Logo" className="w-full h-full object-contain p-4" />
+            {/* LOGO CENTRAL - APENAS A LOGO, RESPONSIVA NO CONTAINER */}
+            <div className="w-64 h-64 lg:w-80 lg:h-80 bg-white rounded-full shadow-[0_40px_80px_rgba(0,0,0,0.6)] flex items-center justify-center relative z-10 hover:scale-105 transition-transform duration-700 overflow-hidden border-8 border-white/5">
+               <img src={BRAND_LOGO_URL} alt="Insight360 Logo" className="w-full h-full object-cover" />
             </div>
-          </div>
-          
-          <div className="mt-12 text-center space-y-2 animate-fade-in">
-            <h3 className="text-3xl font-black text-white tracking-tighter uppercase leading-none">Insight<span className={isCorporate ? 'text-orange-500' : 'text-indigo-400'}>360</span></h3>
-            <p className="text-slate-500 text-[9px] font-black uppercase tracking-[0.4em]">Neurociência & Comportamento</p>
           </div>
         </div>
       </div>
